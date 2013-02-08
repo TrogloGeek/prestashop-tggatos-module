@@ -120,6 +120,7 @@ class TggAtos extends PaymentModule
 	const CNF_OP_FIELD_TID = 'OP_FIELD_TID';
 	const CNF_BINARIES_IN_PATH = 'BINARIES_IN_PATH';
 	const CNF_BIN_PATH = 'BIN_PATH';
+	const CNF_BIN_SUFFIX = 'BIN_SUFFIX';
 	const CNF_PARAM_PATH = 'PARAM_PATH';
 	const CNF_RETURN_PROTOCOL_USER = 'RETURN_PROTOCOL_USER';
 	const CNF_RETURN_DOMAIN_USER = 'RETURN_DOMAIN_USER';
@@ -1406,6 +1407,12 @@ class TggAtos extends PaymentModule
 					'width' => '100%',
 					'default' => $this->local_path . 'bin'.DIRECTORY_SEPARATOR
 				),
+				self::CNF_BIN_SUFFIX => array(
+					'type' => self::T_STRING,
+					'input' => self::IN_TEXT,
+					'description' => $this->l('Optionnal suffix to append at the end of request and response binaries before calling them.'),
+					'default' => ''
+				),
 				self::CNF_PARAM_PATH => array(
 					'type' => self::T_PATH,
 					'input' => self::IN_TEXT,
@@ -2022,7 +2029,7 @@ class TggAtos extends PaymentModule
 		{
 			$args = '';
 		}
-		return new TggAtosModuleSystemCall(escapeshellcmd(( $this->get(self::CNF_BINARIES_IN_PATH) ? '' : $this->get(self::CNF_BIN_PATH) ) . $bin_name) . $args);
+		return new TggAtosModuleSystemCall(escapeshellcmd(( $this->get(self::CNF_BINARIES_IN_PATH) ? '' : $this->get(self::CNF_BIN_PATH) ) . $bin_name . $this->get(self::CNF_BIN_SUFFIX)) . $args);
 	}
 	
 	/**
