@@ -52,6 +52,8 @@ class TggAtos extends PaymentModule
 	const PARMCOM = 'parmcom';
 	const CERTIF = 'certif';
 	
+	const PATHFILE_VARLENGTH = 78;
+	
 	const MODE_SINGLE = 1;
 	const MODE_2TPAYMENT = 2;
 	const MODE_3TPAYMENT = 3;
@@ -519,6 +521,7 @@ class TggAtos extends PaymentModule
 		
 		$data = array();
 		$params = array(
+			'language' => $this->get(self::CNF_ISO_LANG) ? $this->get(self::CNF_ISO_LANG) : $this->context->language->iso_code,
 			'merchant_id' => $this->get(self::CNF_PRODUCTION) ? $this->get(self::CNF_MERCHANT_ID) : $this->_demoCertificates[$this->get(self::CNF_BANK)],
 			'currency_code' => $currency->iso_code_num,
 			'amount' => intval(round($atosAmount)),
@@ -1197,7 +1200,7 @@ class TggAtos extends PaymentModule
 					'type' => self::T_URI,
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Web URI of the folder containing card logos'),
-					'hint' => $this->l('Change this to use a custom card logos pack. You should put your logos in a theme sub-folder.'),
+					'hint' => $this->l('Change this to use a custom card logos pack. You should put your logos in a theme sub-folder. An undocumented limitation of PATHFILE reader seems to limit this field to 78 characters.'),
 					'pathfile' => 'D_LOGO',
 					'width' => '100%',
 					'default' => $this->_path . 'card_logo/'
@@ -1407,7 +1410,7 @@ class TggAtos extends PaymentModule
 					'type' => self::T_PATH,
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Location of ATOS configuration'),
-					'hint' => $this->l('MUST be readable by PHP user.'),
+					'hint' => $this->l('MUST be readable (and writable to allow module to update those files) by PHP user.'),
 					'pathfile' => 'F_PARAM, F_CERTIFICATE, F_DEFAULT',
 					'width' => '100%',
 					'default' => $this->local_path . 'param'.DIRECTORY_SEPARATOR
@@ -1657,6 +1660,17 @@ class TggAtos extends PaymentModule
 		return $html;
 	}
 	
+	public function generatePathfileContent()
+	{
+		return $pathfile_content = array(
+			'DEBUG' => $this->get(self::CNF_DEBUG_MODE) ? 'YES' : 'NO',
+			'D_LOGO' => $this->get(self::CNF_CARD_IMG_PATH),
+			'F_CERTIFICATE' => $this->get(self::CNF_PARAM_PATH) . self::CERTIF,
+			'F_PARAM' => $this->get(self::CNF_PARAM_PATH) . self::PARMCOM,
+			'F_DEFAULT' => $this->get(self::CNF_PARAM_PATH) . self::PARMCOM . '.' . $this->get(self::CNF_BANK)
+		);
+	}
+	
 	public function updateAtosParamFiles()
 	{
 		if (!$this->get(self::CNF_BANK))
@@ -1664,13 +1678,7 @@ class TggAtos extends PaymentModule
 		if ($this->get(self::CNF_PRODUCTION) && !$this->get(self::CNF_MERCHANT_ID))
 			return;
 		$this->initConfVars();
-		$pathfile_content = array(
-			'DEBUG' => $this->get(self::CNF_DEBUG_MODE) ? 'YES' : 'NO',
-			'D_LOGO' => $this->get(self::CNF_CARD_IMG_PATH),
-			'F_CERTIFICATE' => $this->get(self::CNF_PARAM_PATH) . self::CERTIF,
-			'F_PARAM' => $this->get(self::CNF_PARAM_PATH) . self::PARMCOM,
-			'F_DEFAULT' => $this->get(self::CNF_PARAM_PATH) . self::PARMCOM . '.' . $this->get(self::CNF_BANK)
-		);
+		$pathfile_content = $this->generatePathfileContent();
 		foreach ($pathfile_content as $name => &$line)
 			$line = $name . '!' . $line . '!';
 		$pathfile = $this->get(self::CNF_PARAM_PATH) . self::PATHFILE;
@@ -1937,6 +1945,13 @@ class TggAtos extends PaymentModule
 		if (!( $this->get(self::CNF_SINGLE) || $this->get(self::CNF_2TPAYMENT) || $this->get(self::CNF_3TPAYMENT) ))
 		{
 			$this->_errors[] = $this->l('No payment mode enabled');
+		}
+		foreach ($this->generatePathfileContent() as $name => $value)
+		{
+			if (strlen($value) > self::PATHFILE_VARLENGTH)
+			{
+				$this->_errors[] = sprintf($this->l('Pathfile %1$s value is %4$u characters long. An undocumented limitation of ATOS SIPS pathfile reader seems to disallow pathfile values to be longer than %3$u characters. F_* values can be shortened by moving param directory upper on the file system and updating corresponding entry in advanced conf.'), $name, $value, self::PATHFILE_VARLENGTH, strlen($value));
+			}
 		}
 		$this->warning = implode(PHP_EOL, $this->_errors);
 		return $errorsIndex;
