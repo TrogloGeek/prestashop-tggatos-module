@@ -53,6 +53,7 @@ class TggAtos extends PaymentModule
 	const CERTIF = 'certif';
 	
 	const PATHFILE_VARLENGTH = 78;
+	const RECEIPT_COMPLEMENT_MAXLENGTH = 3072;
 	
 	const MODE_SINGLE = 1;
 	const MODE_2TPAYMENT = 2;
@@ -586,7 +587,53 @@ class TggAtos extends PaymentModule
 			}
 		}
 		$params['data'] = implode(';', $data);
-		$call = $this->rawCall(self::BIN_REQUEST, $this->paramsToArgs(array_merge($params,$mergeParams)));
+		$params = array_merge($params,$mergeParams);
+		if (!isset($params['receipt_complement']))
+		{
+			//This parameter is generated only if not overriden as we don't want to waste processing resources
+			// passing this parameter with value boolean FALSE will forbid template to be called
+			// and receipt_complement to be populated in ATOS SIPS API request call
+			$this->smarty->assign(array(
+				'TggAtos' => $this,
+				'tggatos_cart' => $this->context->cart,
+				'tggatos_params' => $params,
+				'tggatos_mode' => $mode,
+				'tggatos_fromCharset' => 'UTF-8',
+				'tggatos_toCharset' => 'ISO-8859-1//TRANSLIT'
+			), null, true);
+			$params['receipt_complement'] = trim($this->display(__FILE__, 'param_receipt_complement.tpl'));
+			//Charsets can be overriden by in-template assignation with scope="parent"
+			$fromCharset = $this->smarty->getTemplateVars('tggatos_fromCharset');
+			$toCharset = $this->smarty->getTemplateVars('tggatos_toCharset');
+			$this->smarty->clearAssign('tggatos_fromCharset');
+			$this->smarty->clearAssign('tggatos_toCharset');
+			if (!empty($params['receipt_complement'])) {
+				$params['receipt_complement'] = iconv($fromCharset, $toCharset, $params['receipt_complement']);
+				if ($params['receipt_complement'] === FALSE) 
+				{
+					self::error(__LINE__, sprintf('Iconv failed to convert encoding of receipt_complement from %s to %s', $fromCharset, $toCharset), 3);
+					unset($params['receipt_complement']);
+				} else {
+					$rawReceipt = $params['receipt_complement'];
+					$params['receipt_complement'] = '';
+					//Now we convert all non ASCII 128 character to an HTML entity as ATOS SIPS API is really old
+					// and seems to have problem with these characters. It's a waste of character, but it was my better idea
+					// to deal with it
+					for ($c = 0; $c < strlen($rawReceipt); $c++)
+						if (ord($rawReceipt[$c]) <= 128)
+							$params['receipt_complement'] .= $rawReceipt[$c];
+						else
+							$params['receipt_complement'] .= '&#'.ord($rawReceipt[$c]).';';
+					if (strlen($params['receipt_complement']) > self::RECEIPT_COMPLEMENT_MAXLENGTH) {
+						self::error(__LINE__, sprintf('Receipt complement is too long: %u characters long, %u characters max.', strlen($params['receipt_complement']), self::RECEIPT_COMPLEMENT_MAXLENGTH), 3, $params['receipt_complement']);
+						unset($params['receipt_complement']);
+					}
+				}
+			} else {
+				unset($params['receipt_complement']);
+			}
+		}
+		$call = $this->rawCall(self::BIN_REQUEST, $this->paramsToArgs($params));
 		if ($call->exit_code != 0)
 		{
 			self::error(__LINE__, sprintf('Error when calling request ATOS binary, exit code was: '.$call->exit_code), 4, $call);

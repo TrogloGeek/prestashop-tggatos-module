@@ -1,0 +1,10 @@
+{* assign tggatos_toCharset to the charset used by your bank server *}
+{assign var="tggatos_toCharset" value="ISO-8859-1//TRANSLIT" scope="parent"}
+{* We use js="1" parameter in conjuction with stripslashes modifier as PrestaShop offers no other way to translate without htmlentities UTF-8 encoding *}
+<tr><th>Test</th><td>{l|stripslashes s='Parties ouïes, le duc se préoccupait fort de l\'ignorer. Toutes vos actions, si sa soeur avait donné libre cours à sa bile. Cadeau de la maison et le fit se retourner. Fichue hypocrite, va, tu serais un des gros livres, et revenir avec les ouvriers. Bercé par ce murmure, et dans nos livres. Dirait-on que moi, dit-il en hochant la tête. Prudent, cauteleux, ambitieux quoique peu fait pour lui et le gifla à tour de rôle. Chemin faisant, j\'achetai un vaisseau tout équipé, avec de la colle.' mod='tggatos' js=1}</td></tr>
+{* 
+	As modifiers prevents PrestaShop to detect {l} function call, 
+	it won't be available in back office for translation unless we help it be calling {l} function again with same parameters
+	but without modifier
+*}
+{l s='test Parties ouïes, le duc se préoccupait fort de l\'ignorer. Toutes vos actions, si sa soeur avait donné libre cours à sa bile. Cadeau de la maison et le fit se retourner. Fichue hypocrite, va, tu serais un des gros livres, et revenir avec les ouvriers. Bercé par ce murmure, et dans nos livres. Dirait-on que moi, dit-il en hochant la tête. Prudent, cauteleux, ambitieux quoique peu fait pour lui et le gifla à tour de rôle. Chemin faisant, j\'achetai un vaisseau tout équipé, avec de la colle.' mod='tggatos'}
