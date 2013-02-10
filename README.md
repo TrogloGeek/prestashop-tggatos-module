@@ -3,7 +3,45 @@ prestashop-tggatos-module
 
 TggAtos Module for Prestashop 1.5, ATOS SIPS 600 payment gateway
 
-#### TODO
-- Make a Wiki documentation about installation, configuration and usage of the module. Dual ODT/PDF formats requieres too much time to maintain and does not allow easy participation to it's redaction.
-- Add a similar fonctionnality to the 2.1 branch params.xml allowing to set static ATOS SIPS request call parameters without extending the module.
-- Develop a new parser for params.xml file allowing more context sensitive switches (allowing for exemple changing `payment_means` parameter depending on the payment amount expressed in default currency).
+Release Candidate for production release 3.0.0
+
+#### RELEASE-CANDIDATE feedback requests
+- Check that silent response works well (not yet checked due the use of a local virtual machine as server)
+- Production use feedbacks with:
+	- details about used functionnalities
+	- details about production environment configuration:
+		- general public Web Hosting if relevant (exemple: "Mutualised Pro hosting from OVH company" or "Dedicated web server from OVH company", the last one is only relevant if you didn't change much of the configuration options that may affect module operation)
+		- OS used with distribution and version
+		- HTTP server, and multi process module if relevant, with version
+		- PHP integration type and version
+		- any HTTP and PHP configuration options alteration you may think relevant
+		- PrestaShop version
+		- PrestaShop functionnalities used that may affect module operation (multi-shop, splitted-orders...)
+		- anything else you think relevant
+- As I am not a native english speaker please report any bad wording
+
+#### Environment used to test current version
+- Debian 6 x86_64 up-to-date (2013-02-09)
+- apache2-mpm-prefork (I prefer mpm-worker for production server but this is a dedicated local virtual machine with Eclipse project folder mounted from Windows host machine)
+- libapache2-mod-php5
+- PHP5 with suhosin (Debian's default)
+
+#### Prerequisites
+- (hosting) PHP5 >= 5.3
+- (hosting) safe_mode off
+- (hosting) exec() function not disabled, and able to execute ATOS SIPS binaries
+- (prestashop) version >= 1.5
+- (you) good web hosting configuration technical level and good knowledge of security issues
+- (you) basic undestanding of the way an ATOS SIPS gateway works and it's configuration
+
+#### Installation (differences with a simple PrestaShop module)
+- Replace `tggatos/bin/` content with binaries compatible with your system provided by your SIPS service provider
+- Update `tggatos/param/parmcom.<sips_service_provider_codename>` with content of default parmcom provided by your SIPS service provider 
+- `tggatos/bin/` folder, it's content and upper folders in file system needs execution right set to PHP user
+- `tggatos/param/` folder and it's content must be writable by PHP user
+- `tggatos/log/` folder must be writable by PHP user
+- Install module
+- Relocate `tggatos/param` somewhere safe from public access, outside HTTP document root, update module configuration in advanced panel.
+- Relocate `tggatos/log` folder, update module configuration in basic panel.
+- Check if access control policies match your environment and configuration, modify if needed.
+- If you experience any trouble please set PrestaShop constant _PS_MODE_DEV_ to TRUE, enable PHP error logging and set error reporting to -1 (all) while troubleshooting 
