@@ -27,6 +27,11 @@ Donations help me to find time to develop and maintain the module and to answer 
 		- anything else you think relevant
 - As I am not a native english speaker please report any bad wording
 
+Feedbacks which are not issues can be submitted as comments to the following blog ticket:
+http://prestashop.blog.capillotracteur.fr/2013/02/10/debut-de-la-phase-release-cadidate-pour-la-version-3-0-0-de-tggatos/
+
+Sorry, it is a french blog, but they can be submitted in english as well.
+
 #### Environment used to test current version
 - Debian 6 x86_64 up-to-date (2013-02-09)
 - apache2-mpm-prefork (I prefer mpm-worker for production server but this is a dedicated local virtual machine with Eclipse project folder mounted from Windows host machine)
