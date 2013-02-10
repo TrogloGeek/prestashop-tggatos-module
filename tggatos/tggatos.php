@@ -1003,8 +1003,8 @@ class TggAtos extends PaymentModule
 				self::CNF_CHECK_VERSION => array(
 					'type' => self::T_BOOL,
 					'input' => self::IN_CHECKBOX,
-					'description' => $this->l('Check availabity of update in back office'),
-					'hint' => $this->l('May slow a bit modules page on back office and may not work on some cheap hostings.'),
+					'description' => $this->l('Check availabity of update in back office (see hint for confidentialities issues)'),
+					'hint' => $this->l('May slow a bit modules page on back office and may not work on some low cost hostings.|In exchange of this service, statistics are collected, following information will be transmitted:|- PrestaSop\'s version|- TggAtos\'s version|- Shop domain|- Back-office language used'),
 					'default' => FALSE
 				),
 				self::CNF_OS_PAYMENT_CANCELLED => array(
