@@ -737,11 +737,11 @@ class TggAtos extends PaymentModule
 			if ($this->context->currency->decimals)
 				$amount /= 100;
 			$extraVars = array();
-			$orderLog = array();
+			$orderLog = $this->get(self::CNF_ORDER_MESSAGE) ? array() : null;
 			foreach (TggAtosModuleResponseObject::$fields as $field)
 			{
 				$extraVars['tggatos_'.$field] = $response->{$field};
-				$orderLog[] = $field.': '.$response->{$field};
+				if (is_array($orderLog)) $orderLog[] = $field.': '.$response->{$field};
 			}
 			$extraVars['transaction_id'] = $response->{$this->get(self::CNF_OP_FIELD_TID)};
 			$this->validateOrder(
