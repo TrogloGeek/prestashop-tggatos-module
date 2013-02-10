@@ -1,9 +1,16 @@
-prestashop-tggatos-module
-=========================
+# TggAtos Module for Prestashop 1.5
+## ATOS SIPS 600 payment gateway
 
-TggAtos Module for Prestashop 1.5, ATOS SIPS 600 payment gateway
+###### This module helped you earning money ?
+Please contribute back
 
-Release Candidate for production release 3.0.0
+[![Donate to help development and support of TggAtos] (https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)] (https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UEN4JZ24FVDXU)
+
+Suggested donation: 25 &euro; for basic user, 80 &euro; for professionals which often use the module.
+
+Donations help me to find time to develop and maintain the module and to answer support requests.
+
+### Release Candidate for production release 3.0.0
 
 #### RELEASE-CANDIDATE feedback requests
 - Check that silent response works well (not yet checked due the use of a local virtual machine as server)
