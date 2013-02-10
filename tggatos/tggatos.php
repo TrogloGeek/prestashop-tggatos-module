@@ -39,7 +39,7 @@ class TggAtos extends PaymentModule
 	const RETURN_CONTEXT_USER = 'user';
 	const RETURN_CONTEXT_SILENT = 'silent';
 	
-	const BANK_CONTROLLER_USER = 'autodispatch/userreturn.php';
+	const BANK_CONTROLLER_USER = 'autodispatch/userreturn.pub.php';
 	
 	const BLOCK_ALIGN_CENTER = 'center';
 	const BLOCK_ALIGN_LEFT = 'left';
@@ -1251,7 +1251,7 @@ class TggAtos extends PaymentModule
 					'hint' => $this->l('Change this to use a custom card logos pack. You should put your logos in a theme sub-folder. An undocumented limitation of PATHFILE reader seems to limit this field to 78 characters.'),
 					'pathfile' => 'D_LOGO',
 					'width' => '100%',
-					'default' => $this->_path . 'card_logo/'
+					'default' => $this->_path . 'images/card_logo/'
 				),
 				self::CNF_BLOCK_ORDER => array(
 					'type' => self::T_STRING,
@@ -1677,19 +1677,19 @@ class TggAtos extends PaymentModule
 					if (!empty($declaration['atos']))
 					{
 						$html .= '
-									<strong title="'.Tools::htmlentitiesUTF8($this->l('ATOS parameter, cf parameters glossary in ATOS doc.')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'atos_logo.gif" width="16" height="16" />&nbsp;<em>'.$declaration['atos'].'</em></strong>
+									<strong title="'.Tools::htmlentitiesUTF8($this->l('ATOS parameter, cf parameters glossary in ATOS doc.')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'images/atos_icon.gif" width="16" height="16" />&nbsp;<em>'.$declaration['atos'].'</em></strong>
 						';
 					}
 					if (!empty($declaration['pathfile']))
 					{
 						$html .= '
-									<strong title="'.Tools::htmlentitiesUTF8($this->l('ATOS pathfile parameter, cf ATOS programmer\'s guide.')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'atos_logo.gif" width="16" height="16" />&nbsp;pathfile: <em>'.$declaration['pathfile'].'</em></strong>
+									<strong title="'.Tools::htmlentitiesUTF8($this->l('ATOS pathfile parameter, cf ATOS programmer\'s guide.')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'images/atos_icon.gif" width="16" height="16" />&nbsp;pathfile: <em>'.$declaration['pathfile'].'</em></strong>
 						';
 					}
 					if (!empty($declaration['parmcom']))
 					{
 						$html .= '
-									<strong title="'.Tools::htmlentitiesUTF8($this->l('This value is written in parmcom file to following configuration entry')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'atos_logo.gif" width="16" height="16" />&nbsp;parmcom: <em>'.$declaration['parmcom'].'</em></strong>
+									<strong title="'.Tools::htmlentitiesUTF8($this->l('This value is written in parmcom file to following configuration entry')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'images/atos_icon.gif" width="16" height="16" />&nbsp;parmcom: <em>'.$declaration['parmcom'].'</em></strong>
 						';
 					}
 					$html .= '

@@ -1,0 +1,8 @@
+Order Deny,Allow
+Deny from all
+<Files "logo.png">
+	Allow from all
+</Files>
+<Files "*.pub.php">
+	Allow from all
+</Files>

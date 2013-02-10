@@ -10,7 +10,7 @@ function tggatos_registerRequestValue($name, $value)
 
 function tggatos_autodispatch($file)
 {
-	foreach (array('controller' => basename($file, '.php'), 'fc' => 'module', 'module' => 'tggatos') as $name => $value)
+	foreach (array('controller' => basename($file, '.pub.php'), 'fc' => 'module', 'module' => 'tggatos') as $name => $value)
 		tggatos_registerRequestValue($name, $value);
 	Dispatcher::getInstance()->dispatch();
 }
