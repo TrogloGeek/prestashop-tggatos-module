@@ -56,4 +56,4 @@ Sorry, it is a french blog, but they can be submitted in english as well.
 - Relocate `tggatos/param` somewhere safe from public access, outside HTTP document root, update module configuration in advanced panel.
 - Relocate `tggatos/log` folder, update module configuration in basic panel.
 - Check if access control policies match your environment and configuration, modify if needed.
-- If you experience any trouble please set PrestaShop constant _PS_MODE_DEV_ to TRUE, enable PHP error logging and set error reporting to -1 (all) while troubleshooting 
+- If you experience any trouble please set PrestaShop constant `_PS_MODE_DEV_` to TRUE, enable PHP error logging and set error reporting to -1 (all) while troubleshooting 
