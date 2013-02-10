@@ -1922,6 +1922,7 @@ class TggAtos extends PaymentModule
 	public function autoCheck() 
 	{
 		if (!Module::isInstalled($this->name)) return;
+		$this->initConfVars();
 		$this->warning = array();
 		$errorsIndex = array('BASIC' => 0, 'SINGLE' => 0, '2TIMES' => 0, '3TIMES' => 0, 'GRAPHIC' => 0, 'ADVANCED' => 0);
 		if (version_compare($this->version, $this->get(self::CNF_VERSION), '>'))
@@ -1934,7 +1935,7 @@ class TggAtos extends PaymentModule
 		if (file_exists($installLogFile)) 
 		{
 			$this->_errors[] = sprintf(
-				$this->l('Errors occured during installation, see %s, delete, move or rename the file to stop seeing this message.'),
+				$this->l('Errors occured during installation, read file %s to know what happened during installation and delete or move the file.'),
 				$installLogFile
 			);
 		}
@@ -2007,6 +2008,14 @@ class TggAtos extends PaymentModule
 			{
 				$this->_errors[] = sprintf($this->l('Pathfile %1$s value is %4$u characters long. An undocumented limitation of ATOS SIPS pathfile reader seems to disallow pathfile values to be longer than %3$u characters. F_* values can be shortened by moving param directory upper on the file system and updating corresponding entry in advanced conf.'), $name, $value, self::PATHFILE_VARLENGTH, strlen($value));
 			}
+		}
+		if ($this->get(self::CNF_LOG_PATH) == $this->_confVarsByName[self::CNF_LOG_PATH]['default'])
+		{
+			$this->_errors[] = $this->l('Logs location is the default location which should be moved for security reason. Put it outside of HTTP document root and any public access folder if you can. Make sure no one who shouldn\'t has access to it. Do not forget to update module\'s config with new location in basic panel.');
+		}
+		if ($this->get(self::CNF_PARAM_PATH) == $this->_confVarsByName[self::CNF_PARAM_PATH]['default'])
+		{
+			$this->_errors[] = $this->l('ATOS SIPS parameter files location the default location which should be moved for security reason. Put it outside of HTTP document root and any public access folder if you can. Make sure no one who shouldn\'t has access to it. Do not forget to update module\'s config with new location in advanced panel.');
 		}
 		$this->warning = implode(PHP_EOL, $this->_errors);
 		return $errorsIndex;
