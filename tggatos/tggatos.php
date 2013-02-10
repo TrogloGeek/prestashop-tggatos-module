@@ -1573,6 +1573,7 @@ class TggAtos extends PaymentModule
 			';
 		}
 		$html .= '
+			<p>'.$this->l('Many options have additionnal information displayed by hovering corresponding input field with your mouse cursor.').'</p>
 			<div id="tggatosconfigtabs">
 				<ul>
 		';
@@ -1670,7 +1671,7 @@ class TggAtos extends PaymentModule
 					if (!empty($declaration['hint']))
 					{
 						$html .= '
-									<p class="hint">'.Tools::htmlentitiesUTF8($declaration['hint']).'</p>
+									<p class="hint">'.str_replace('|', '<br />', Tools::htmlentitiesUTF8($declaration['hint'])).'</p>
 						';
 					}
 					if (!empty($declaration['atos']))
