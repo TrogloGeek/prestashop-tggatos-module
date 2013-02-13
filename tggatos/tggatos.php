@@ -487,7 +487,7 @@ class TggAtos extends PaymentModule
 					)
 				), null, true);
 			} else {
-				$this->smarty->assign('tggatos_2tForm', false, true);
+				$this->smarty->assign('tggatos_3tForm', false, true);
 			}
 			return $this->display(__FILE__, 'direct_payment.tpl');
 		} else {
