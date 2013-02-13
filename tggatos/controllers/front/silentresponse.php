@@ -18,7 +18,7 @@ class TggAtosSilentResponseModuleFrontController extends ModuleFrontController
 			header(null, null, 500);
 			exit;
 		}
-		$response = $this->module->uncypherResponse($message, TggAtosModuleResponseObject::TYPE_USER);
+		$response = $this->module->uncypherResponse($message, TggAtosModuleResponseObject::TYPE_SILENT);
 		$this->module->processResponse($response);
 	}
 }
