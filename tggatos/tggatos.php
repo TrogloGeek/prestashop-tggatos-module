@@ -872,7 +872,7 @@ class TggAtos extends PaymentModule
 			case self::RETURN_CONTEXT_SILENT:
 				$protocol = self::RETURN_PROTOCOL_HTTP;
 				$domain = $this->get(self::CNF_RETURN_DOMAIN_SILENT);
-				$controller = $this->context->link->getModuleLink($this->name, 'silentresponse');
+				$controller = preg_replace('@^(https?://[^/]+)?(/.*)$@', '$2', $this->context->link->getModuleLink($this->name, 'silentresponse'));
 				break;
 			default:
 				throw new PrestaShopModuleException('Invalid Argument $context (must be self::RETURN_CONTEXT_*)');
