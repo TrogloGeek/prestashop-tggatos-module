@@ -2468,15 +2468,16 @@ class TggAtosModuleResponseObject
 				if (is_array($_SERVER) && isset($_SERVER['REMOTE_ADDR']))
 					$this->caller_ip_address = $_SERVER['REMOTE_ADDR'];
 				$fields = self::$fields;
-				if (count($responseFields) != count($fields))
+				if (count($responseFields) < count($fields))
 				{
-					foreach ($fields as $field)
+					foreach (self::$shortResponseUnavailableFields as $field)
 						array_splice($fields, array_search($field, $fields), 1);
 					if (count($responseFields) != count($fields))
 						TggAtos::error(__LINE__, 'Fields count mismatch in uncyphered response', 4, array('received fields' => $responseFields, 'known fields' => self::$fields), true, true);
 				}
-				foreach (self::$fields as $pos => $name)
-					$this->{$name} = $responseFields[$pos];
+				foreach ($fields as $pos => $name)
+					if (isset($responseFields[$pos]))
+						$this->{$name} = $responseFields[$pos];
 				if (!empty($this->data))
 				{
 					foreach (explode(';', $this->data) as $dataPiece)
