@@ -1,3 +1,4 @@
-tggatos/config.xml
-tggatos/log/*
-tggatos/param/pathfile
+/config.xml
+/log/*
+/param/pathfile
+/param/parmcom.[0-9]+
