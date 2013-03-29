@@ -211,7 +211,10 @@ class TggAtos extends PaymentModule
 		$this->displayName = $this->l('CC Payment with SIPS/ATOS');
 		$this->description = $this->l('SIPS/ATOS payment module by TrogloGeek');
 		$this->confirmUninstall = $this->l('Uninstall this module will erase your configuration including current transaction ID, continue ?');
-		if ($this->context->cookie->isLoggedBack() && ($this->context->controller instanceof AdminModulesController) && !in_array($this->name, explode('|', Tools::getValue('configure', ''))))
+		if ($this->context->employee instanceof Employee
+				&& $this->context->employee->isLoggedBack()
+				&& ($this->context->controller instanceof AdminModulesController)
+				&& !in_array($this->name, explode('|', Tools::getValue('configure', ''))))
 		{
 			$this->autoCheck();
 		}
@@ -222,7 +225,7 @@ class TggAtos extends PaymentModule
 	 * @param string $varname name of internal configuration variable to fetch
 	 * @return string
 	 */
-	public function get($varname) 
+	public function get($varname)
 	{
 		$this->initConfVars();
 		$value = Configuration::get(strtoupper($this->name).'_'.$varname);
