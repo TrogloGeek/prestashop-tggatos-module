@@ -539,6 +539,8 @@ class TggAtos extends PaymentModule
 		{
 			$params['customer_ip_address'] = substr($_SERVER['REMOTE_ADDR'], max(0, strlen($_SERVER['REMOTE_ADDR']) - 20), min(19, strlen($_SERVER['REMOTE_ADDR'])));
 		}
+		if (strlen($this->context->customer->email) <= 128)
+			$params['customer_email'] = $this->context->customer->email;
 		if (!is_null($transaction_id))
 		{
 			$params['transaction_id'] = $transaction_id;
