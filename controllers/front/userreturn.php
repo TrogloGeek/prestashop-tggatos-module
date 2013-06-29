@@ -19,8 +19,8 @@ class TggAtosUserReturnModuleFrontController extends ModuleFrontController
 		$order = $this->module->processResponse($response);
 		if ($order)
 		{
-			Tools::redirect('index.php?controller=order-confirmation&id_cart='.$order->id_cart.'&id_order='.$order->id.'&key='.urlencode($order->secure_key).'&id_module='.$this->module->id.'&tggatos_date='.date('Y-m-d'));
+			Tools::redirect('index.php?controller=order-confirmation&id_cart='.$order->id_cart.'&id_order='.$order->id.'&transaction_id='.urlencode($response->transaction_id).'&key='.urlencode($order->secure_key).'&id_module='.$this->module->id.'&tggatos_date='.date('Y-m-d'));
 		}
-		Tools::redirect('index.php?fc=module&module='.$this->module->name.'&controller=paymentfailure&id_cart='.$response->order_id.'&tggatos_date='.date('Y-m-d'));
+		Tools::redirect('index.php?fc=module&module='.$this->module->name.'&controller=paymentfailure&id_cart='.$response->order_id.'&transaction_id='.urlencode($response->transaction_id).'&tggatos_date='.date('Y-m-d'));
 	}
 }

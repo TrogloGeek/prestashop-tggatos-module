@@ -505,7 +505,7 @@ class TggAtos extends PaymentModule
 	
 	public function hookDisplayPaymentReturn($params)
 	{
-		$this->smarty->assign('tggatos_response', $this->getResponseFromLog(Tools::getValue('tggatos_date'), Tools::getValue('id_cart')));
+		$this->smarty->assign('tggatos_response', $this->getResponseFromLog(Tools::getValue('tggatos_date'), Tools::getValue('id_cart'), Tools::getValue('transaction_id')));
 		return $this->display(__FILE__, 'payment_return.tpl');
 	}
 	
@@ -1813,7 +1813,7 @@ class TggAtos extends PaymentModule
 	 * @param int $id_cart
 	 * @return TggAtosModuleResponseObject
 	 */
-	public function getResponseFromLog($date, $id_cart)
+	public function getResponseFromLog($date, $id_cart, $transaction_id)
 	{
 		$file = $this->get(TggAtos::CNF_LOG_PATH).$date.'.csv';
 		if (!file_exists($file)) return null;
@@ -1829,11 +1829,14 @@ class TggAtos extends PaymentModule
 			$idCartColumn = array_search('order_id', $fields);
 			if ($idCartColumn === FALSE)
 				throw new Exception('No order_id column found.');
+			$transactionIdColumn = array_search('transaction_id', $fields);
+			if ($transactionIdColumn === FALSE)
+				throw new Exception('No transaction_id column found.');
 			while (!feof($handle) && ($line = fgetcsv($handle, null, ';', '"'))) {
-				if (isset($line[$idCartColumn]) && $line[$idCartColumn] == $id_cart)
+				if (isset($line[$idCartColumn]) && $line[$idCartColumn] == $id_cart && isset($line[$transactionIdColumn]) && $line[$transactionIdColumn] == $transaction_id)
 				{
 					$fieldCount = count(array_filter($line));
-					if ($fieldCount > $found)
+					if ($fieldCount >= $found)
 					{
 						$found = $fieldCount;
 						$response = $line;

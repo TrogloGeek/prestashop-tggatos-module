@@ -62,7 +62,7 @@
 			</tr>
 			<tr class="item">
 				<td>{l s='Amount' mod='tggatos'}</td>
-				<td>{$tggatos_response->amount}</td>
+				<td>{displayPrice price=$tggatos_amount currency=$tggatos_currency->id}</td>
 			</tr>
 		</tbody>
 	</table>
