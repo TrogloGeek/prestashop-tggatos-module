@@ -2025,6 +2025,13 @@ class TggAtos extends PaymentModule
 		{
 			$this->_errors[] = $this->l('ATOS SIPS parameter files location the default location which should be moved for security reason. Put it outside of HTTP document root and any public access folder if you can. Make sure no one who shouldn\'t has access to it. Do not forget to update module\'s config with new location in advanced panel.');
 		}
+		foreach (array('request', 'get', 'post') as $method)
+		{
+			$suhosin_key = 'suhosin.'.$method.'.max_value_length';
+			$suhosin_value = ini_get($suhosin_key);
+			if ($suhosin_value && $suhosin_value < 2048)
+				$this->_errors[] = sprintf($this->l('%1$s PHP suhosin configuration value is %2$s. A value below 2048 could lead to the unability to process ATOS SIPS response. To know the exact value you need please take contact with your ATOS SIPS tech support. http://www.hardened-php.net/suhosin/configuration.html#%1$s'), $suhosin_key, $suhosin_value);
+		}
 		switch (count($this->_errors))
 		{
 			case 0:
