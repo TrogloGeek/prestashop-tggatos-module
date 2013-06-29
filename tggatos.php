@@ -2025,7 +2025,16 @@ class TggAtos extends PaymentModule
 		{
 			$this->_errors[] = $this->l('ATOS SIPS parameter files location the default location which should be moved for security reason. Put it outside of HTTP document root and any public access folder if you can. Make sure no one who shouldn\'t has access to it. Do not forget to update module\'s config with new location in advanced panel.');
 		}
-		$this->warning = implode(PHP_EOL, $this->_errors);
+		switch (count($this->_errors))
+		{
+			case 0:
+				break;
+			case 1:
+				$this->warning = $this->_errors[0];
+				break;
+			default:
+				$this->warning = sprintf($this->l('%u warnings/errors, see module\'s configuration page for more information'), count($this->_errors));
+		}
 		return $errorsIndex;
 	}
 	
