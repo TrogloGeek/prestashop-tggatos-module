@@ -1331,7 +1331,7 @@ class TggAtos extends PaymentModule
 				self::CNF_LOGO_RIGHT => array(
 					'type' => self::T_STRING,
 					'input' => self::IN_TEXT,
-					'description' => $this->l('Upper left logo'),
+					'description' => $this->l('Upper right logo'),
 					'atos' => 'logo_id2',
 					'parmcom' => 'LOGO2',
 					'default' => 'merchant.gif'
