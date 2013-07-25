@@ -201,7 +201,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '3.0.0';
+		$this->version = '3.0.1';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.5.0.1';
 		$this->ps_versions_compliancy['max'] = '1.6';
@@ -1527,6 +1527,7 @@ class TggAtos extends PaymentModule
 	public function getContent()
 	{
 		$this->initConfVars();
+		$this->context->controller->addJqueryUI(array('ui.tabs'));
 		foreach ($this->_confVars as $sectionName => $sectionVars)
 			if (( $sectionName != 'INTERNAL' ) && Tools::isSubmit('btnSubmit'.$sectionName))
 		{
@@ -1543,8 +1544,6 @@ class TggAtos extends PaymentModule
 		$html = '
 		<h2>'.$this->displayName.'</h2>
 		<h3>'.$this->l('by').' '.$this->author.'</h3>
-		<link rel="stylesheet" type="text/css" media="all" href="'.Tools::htmlentitiesUTF8($this->_path.'jquery-ui-1.9.2.custom/css/redmond/jquery-ui-1.9.2.custom.min.css').'" />
-		<script type="text/javascript" src="'.Tools::htmlentitiesUTF8($this->_path.'jquery-ui-1.9.2.custom/js/jquery-ui-1.9.2.custom.min.js').'"></script>
 		<style type="text/css" media="all">
 			#tggatoscontent input[type="text"],
 			#tggatoscontent select { display: block; box-sizing: border-box; }
@@ -1556,7 +1555,6 @@ class TggAtos extends PaymentModule
 		</style>
 		<script type="text/javascript">
 			jQuery(function($) {
-				$(\'#tggatoscontent\').tooltip();
 				$(\'#tggatosconfigtabs\').tabs({ active: '.intval(Tools::getValue('tggatos_opennedPannel', 0)).' });
 			});
 		</script>
@@ -1580,7 +1578,7 @@ class TggAtos extends PaymentModule
 		$html .= '
 			<p>'.$this->l('Many options have additionnal information displayed by hovering corresponding input field with your mouse cursor.').'</p>
 			<div id="tggatosconfigtabs">
-				<ul>
+				<ul class="clearfix">
 		';
 		foreach ($this->_confVars as $sectionName => $sectionVars)
 		{
