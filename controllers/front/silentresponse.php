@@ -2,7 +2,7 @@
 class TggAtosSilentResponseModuleFrontController extends ModuleFrontController
 {
 	public $display_column_left = false;
-	public $ssl = true;
+	public $ssl = false;
 
 	/**
 	 *  @var TggAtos
