@@ -2230,7 +2230,28 @@ class TggAtos extends PaymentModule
 	public static function error($line, $message, $severity = 4, $object = NULL, $dieIfDevMode = true, $dieAnyway = false, $file = __FILE__)
 	{
 		$error = $file.'('.$line.'): '.$message;
-		$errorlog = $error.(is_null($object) ? '' : PHP_EOL.'debug object: '.print_r($object));
+		$errorlog = $error;
+		if (!is_null($object))
+		{
+			//@todo: find an actual good solution to be able to log anything without any loss of information
+			$objectOutput = print_r($object, true);
+			if (!Validate::isMessage($objectOutput))
+			{
+				$originalOutput = $objectOutput;
+				foreach (array('[' => null, ']' => null, '<' => '&lt;', '>' => '$gt;') as $in => $out)
+					$objectOutput = str_replace($in, is_null($out) ? '&#'.ord($in).';' : $out, $objectOutput);
+				if (!Validate::isMessage($objectOutput))
+					$objectOutput = htmlentities($originalOutput, ENT_QUOTES, 'UTF-8', true);
+				if (!Validate::isMessage($objectOutput))
+					$objectOutput = sprintf(
+							$this->l('Can\'t dump debug object `%s` to log.'),
+							is_object($object)
+								? get_class($object)
+								: gettype($object)
+					);
+			}
+			$errorlog = $error.(is_null($object) ? '' : PHP_EOL.'debug object: '.$objectOutput);
+		}
 		Logger::addLog($errorlog);
 		if (_PS_MODE_DEV_)
 		{
@@ -2241,7 +2262,7 @@ class TggAtos extends PaymentModule
 			Tools::dieObject($object, $dieIfDevMode);
 		}
 		if ($dieAnyway)
-			throw new PrestaShopModuleException($errorlog);
+			throw new PrestaShopModuleException($error.(is_null($object) ? '' : PHP_EOL.'debug object: '.print_r($object, true)));
 	}
 }
 
