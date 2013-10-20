@@ -57,3 +57,26 @@ Sorry, it is a french blog, but they can be submitted in english as well.
 - Relocate `tggatos/log` folder, update module configuration in basic panel.
 - Check if access control policies match your environment and configuration, modify if needed.
 - If you experience any trouble please set PrestaShop constant `_PS_MODE_DEV_` to TRUE, enable PHP error logging and set error reporting to -1 (all) while troubleshooting 
+
+#### Release cycle
+I do not have enough feedback to manage a real release cycle, and I don't use it myself, I do run alpha tests on it but it is only a set of basic tests to try to check if I introduced side effects with last changes, never trust my checks, please run your owns.
+so it's mainly based on the lack of error reporting for a given release candidate.
+- Release candidates are symbolized by branches with a name starting with `RC_` followed by the version number. There are no build number management because commit history does the job as well.
+- When I feel enough time have passed without error report, I set a tag with version number to the tip of the RC branch, symbolizing a production release. But please do not trust it as a real production release, it's just an hint to let you know my opinion about it, you really should do a staging cycle with every version to check if I didn't introduced new bugs/incompatibilities.
+
+#### I have you module running well in production, but there is a new release, should I blindly update?
+The hell no! This is a payment gateway, you should be really careful about it.
+Read the commit history between your release and the new one. 
+- Did I fix a bug which can affect your use of the module, or a security breach?
+- Did I introduced new features you need/want?
+If one answer is yes, you should consider updating, but you have to run you own checks to the new version prior to use it in production.
+You also have to check wordings and manage translations before putting any version in production, remember that I'm a developper, not a commercial expert, don't expect my wordings to be well written, there are more placeholder than real wordings, your clients might be frightened by any oddity on the payment process. 
+
+#### I use your module and I feel there have to be implied warranties with the use of it.
+I don't feel that way.
+This module is provided as is, I really try to provide you with a reliable high quality gateway, but hey, I'm human!
+I'm mainly working alone on this project, with some help from others in the form of feedbacks and push requests once and then, but it's not enough for the module to be fully trusted.
+I initiated this project because I have good experience with ATOS/SIPS gateway and I didn't feel any existing Prestashop ATOS/SIPS module to be reliable enough, but my good will on this project is not a reliability proof.
+
+#### What if I want a gateway offering more warranties?
+I don't know, sorry, I created this one because I did not trust existing others, so I can't help you finding a more reliable module.
