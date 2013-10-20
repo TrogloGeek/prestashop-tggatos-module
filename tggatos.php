@@ -150,6 +150,8 @@ class TggAtos extends PaymentModule
 	const CNF_3TPAYMENT_FP_FXD = '3TPAYMENT_FP_FXD';
 	const CNF_3TPAYMENT_FP_PCT = '3TPAYMENT_FP_PCT';
 	
+	const FILE_ERROR_LOG = 'error.log';
+	
 	/**
 	 * @var array
 	 */
@@ -201,7 +203,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '3.0.2';
+		$this->version = '3.1.0';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.5.0.1';
 		$this->ps_versions_compliancy['max'] = '1.6';
@@ -435,7 +437,7 @@ class TggAtos extends PaymentModule
 			$transaction_id = $this->generateTransactionId();
 			if (!$transaction_id)
 			{
-				self::error(__LINE__, 'No transaction_id generated', 3, null, false);
+				$this->error(__LINE__, 'No transaction_id generated', 3, null, false);
 				return false;
 			}
 			$currency = Currency::getCurrencyInstance(intval($cart->id_currency));
@@ -548,7 +550,7 @@ class TggAtos extends PaymentModule
 			$params['transaction_id'] = $this->generateTransactionId();
 			if (empty($params['transaction_id']))
 			{
-				self::error(__LINE__, 'No transaction_id has been generated', 4);
+				$this->error(__LINE__, 'No transaction_id has been generated', 4);
 				return false;
 			}
 		}
@@ -616,7 +618,7 @@ class TggAtos extends PaymentModule
 				$params['receipt_complement'] = iconv($fromCharset, $toCharset, $params['receipt_complement']);
 				if ($params['receipt_complement'] === FALSE) 
 				{
-					self::error(__LINE__, sprintf('Iconv failed to convert encoding of receipt_complement from %s to %s', $fromCharset, $toCharset), 3);
+					$this->error(__LINE__, sprintf('Iconv failed to convert encoding of receipt_complement from %s to %s', $fromCharset, $toCharset), 3);
 					unset($params['receipt_complement']);
 				} else {
 					$rawReceipt = $params['receipt_complement'];
@@ -630,7 +632,7 @@ class TggAtos extends PaymentModule
 						else
 							$params['receipt_complement'] .= '&#'.ord($rawReceipt[$c]).';';
 					if (strlen($params['receipt_complement']) > self::RECEIPT_COMPLEMENT_MAXLENGTH) {
-						self::error(__LINE__, sprintf('Receipt complement is too long: %u characters long, %u characters max.', strlen($params['receipt_complement']), self::RECEIPT_COMPLEMENT_MAXLENGTH), 3, $params['receipt_complement']);
+						$this->error(__LINE__, sprintf('Receipt complement is too long: %u characters long, %u characters max.', strlen($params['receipt_complement']), self::RECEIPT_COMPLEMENT_MAXLENGTH), 3, $params['receipt_complement']);
 						unset($params['receipt_complement']);
 					}
 				}
@@ -641,13 +643,13 @@ class TggAtos extends PaymentModule
 		$call = $this->rawCall(self::BIN_REQUEST, $this->paramsToArgs($params));
 		if ($call->exit_code != 0)
 		{
-			self::error(__LINE__, sprintf('Error when calling request ATOS binary, exit code was: '.$call->exit_code), 4, $call);
+			$this->error(__LINE__, sprintf('Error when calling request ATOS binary, exit code was: '.$call->exit_code), 4, $call);
 			return false;
 		}
 		$result = new TggAtosModuleRequestOutputParser($call);
 		if (!$result->success)
 		{
-			self::error(__LINE__, 'Atos invocation returned an error: '.$call->command, 4, $result);
+			$this->error(__LINE__, 'Atos invocation returned an error: '.$call->command, 4, $result);
 			return false;
 		}
 		return ($this->get(self::CNF_DEBUG_MODE) && !empty($result->error)) ? $result->error : $result->form;
@@ -667,13 +669,13 @@ class TggAtos extends PaymentModule
 		$call = $this->rawCall(self::BIN_RESPONSE, $this->paramsToArgs($params));
 		if ($call->exit_code != 0)
 		{
-			self::error(__LINE__, sprintf('Error when calling response ATOS binary, exit code was: %u', $call->exit_code), 4, $call);
+			$this->error(__LINE__, sprintf('Error when calling response ATOS binary, exit code was: %u', $call->exit_code), 4, $call);
 			return false;
 		}
-		$result = new TggAtosModuleResponseOutputParser($call, $message, $responseType);
+		$result = new TggAtosModuleResponseOutputParser($call, $message, $responseType, $this);
 		if (!$result->success)
 		{
-			self::error(__LINE__, 'Failure to uncypher bank response '.$message, 4, $result);
+			$this->error(__LINE__, 'Failure to uncypher bank response '.$message, 4, $result);
 			return false;
 		}
 		return $result->response;
@@ -1575,6 +1577,13 @@ class TggAtos extends PaymentModule
 			</ol>
 			';
 		}
+		$errorLog = $this->get(self::CNF_LOG_PATH) . self::FILE_ERROR_LOG;
+		if (file_exists($errorLog))
+		{
+			$html .= '<h4>' . $this->l('Error log') . ' <small>' . Tools::htmlentitiesUTF8($errorLog) . '</small></h4>
+			<p style="white-space: pre-wrap; border: 1px solid red; padding: 1em;">' . preg_replace('/^(\|\+&gt; [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:)/m', '<br /><strong style="font-size: larger;">$1</strong>', Tools::htmlentitiesUTF8(file_get_contents($errorLog))) . '</p>
+			';
+		}
 		$html .= '
 			<p>'.$this->l('Many options have additionnal information displayed by hovering corresponding input field with your mouse cursor.').'</p>
 			<div id="tggatosconfigtabs">
@@ -1763,7 +1772,7 @@ class TggAtos extends PaymentModule
 	
 	public function logResponse(TggAtosModuleResponseObject $response)
 	{
-			if ($this->get(self::CNF_RESPONSE_LOG_TXT))
+		if ($this->get(self::CNF_RESPONSE_LOG_TXT))
 		{
 			try 
 			{
@@ -1777,7 +1786,7 @@ class TggAtos extends PaymentModule
 				fwrite($handle, PHP_EOL);
 				fclose($handle);
 			} catch (Exception $e) {
-				self::error(__LINE__, $e->getMessage(), 3, NULL, false);
+				$this->error(__LINE__, $e->getMessage(), 3, NULL, false);
 			}
 		}
 		if ($this->get(self::CNF_RESPONSE_LOG_CSV))
@@ -1801,7 +1810,7 @@ class TggAtos extends PaymentModule
 				fputcsv($handle, $fields, ';', '"');
 				fclose($handle);
 			} catch (Exception $e) {
-				self::error(__LINE__, $e->getMessage(), 3, NULL, false);
+				$this->error(__LINE__, $e->getMessage(), 3, NULL, false);
 			}
 		}
 	}
@@ -1843,12 +1852,12 @@ class TggAtos extends PaymentModule
 			}
 				
 		} catch (Exception $e) {
-			TggAtos::error(__LINE__, 'Error while retrieving response from logs '.$file.': '.$e->getMessage(), 1, null, false, false, __FILE__);
+			$this->error(__LINE__, 'Error while retrieving response from logs '.$file.': '.$e->getMessage(), 1, null, false, false, __FILE__);
 		}
 		fclose($handle);
 		if ($found)
 		{
-			$response = TggAtosModuleResponseObject::hydrate(array_combine($fields,$response));
+			$response = TggAtosModuleResponseObject::hydrate(array_combine($fields,$response), $this);
 		}
 		return $response;
 	}
@@ -1933,16 +1942,16 @@ class TggAtos extends PaymentModule
 		$errorsIndex = array('BASIC' => 0, 'SINGLE' => 0, '2TIMES' => 0, '3TIMES' => 0, 'GRAPHIC' => 0, 'ADVANCED' => 0);
 		if (version_compare($this->version, $this->get(self::CNF_VERSION), '>'))
 			$this->postUpdate();
-		$installLogFile = $this->local_path.'log/install.log';
+		$errorLogFile = $this->get(self::CNF_LOG_PATH) . self::FILE_ERROR_LOG;
 		if (version_compare(PHP_VERSION, '5.3', '<'))
 		{
 			$this->_errors[] = sprintf('Your PHP version is %s, this module has been written for PHP 5.3 or higher.', PHP_VERSION);
 		}
-		if (file_exists($installLogFile)) 
+		if (file_exists($errorLogFile)) 
 		{
 			$this->_errors[] = sprintf(
-				$this->l('Errors occured during installation, read file %s to know what happened during installation and delete or move the file.'),
-				$installLogFile
+				$this->l('An error log file exists, please read file `%s` and archive it to stop seeing this warning.'),
+				$errorLogFile
 			);
 		}
 		if (!$this->get(self::CNF_PRODUCTION))
@@ -2227,7 +2236,7 @@ class TggAtos extends PaymentModule
 		$this->l('ADVANCED');
 	}
 	
-	public static function error($line, $message, $severity = 4, $object = NULL, $dieIfDevMode = true, $dieAnyway = false, $file = __FILE__)
+	public function error($line, $message, $severity = 4, $object = NULL, $dieIfDevMode = true, $dieAnyway = false, $file = __FILE__)
 	{
 		$error = $file.'('.$line.'): '.$message;
 		$errorlog = $error;
@@ -2236,23 +2245,26 @@ class TggAtos extends PaymentModule
 			//@todo: find an actual good solution to be able to log anything without any loss of information
 			$objectOutput = print_r($object, true);
 			if (!Validate::isMessage($objectOutput))
-			{
-				$originalOutput = $objectOutput;
-				foreach (array('[' => null, ']' => null, '<' => '&lt;', '>' => '$gt;') as $in => $out)
-					$objectOutput = str_replace($in, is_null($out) ? '&#'.ord($in).';' : $out, $objectOutput);
-				if (!Validate::isMessage($objectOutput))
-					$objectOutput = htmlentities($originalOutput, ENT_QUOTES, 'UTF-8', true);
-				if (!Validate::isMessage($objectOutput))
-					$objectOutput = sprintf(
-							$this->l('Can\'t dump debug object `%s` to log.'),
-							is_object($object)
-								? get_class($object)
-								: gettype($object)
-					);
-			}
+				$objectOutput = sprintf(
+						'Can\'t dump debug object `%s` to Prestashop logger, please see `%s` in module\'s log directory.',
+						is_object($object)
+							? get_class($object)
+							: gettype($object),
+						self::FILE_ERROR_LOG
+				);
 			$errorlog = $error.(is_null($object) ? '' : PHP_EOL.'debug object: '.$objectOutput);
 		}
 		Logger::addLog($errorlog);
+		$fullError = $error.(is_null($object) ? '' : PHP_EOL.'debug object: '.print_r($object, true));
+		$logfile = $this->get(self::CNF_LOG_PATH) . self::FILE_ERROR_LOG;
+		$logFileHandle = fopen($logfile, 'a');
+		if (is_resource($logFileHandle))
+		{
+			fwrite($logFileHandle, '|+> '.date('Y-m-d H:i:s').': ');
+			fwrite($logFileHandle, $fullError);
+			fwrite($logFileHandle, PHP_EOL);
+			fclose($logFileHandle);
+		}
 		if (_PS_MODE_DEV_)
 		{
 			echo '<h2>'.nl2br(Tools::htmlentitiesUTF8($message), true).'</h2>';
@@ -2262,7 +2274,7 @@ class TggAtos extends PaymentModule
 			Tools::dieObject($object, $dieIfDevMode);
 		}
 		if ($dieAnyway)
-			throw new PrestaShopModuleException($error.(is_null($object) ? '' : PHP_EOL.'debug object: '.print_r($object, true)));
+			throw new PrestaShopModuleException($fullError);
 	}
 }
 
@@ -2501,7 +2513,7 @@ class TggAtosModuleResponseObject
 		'response_type'
 	);
 	
-	public function __construct(array $responseFields, $originalMessage, $type, $mode = self::CONSTRUCT_NEW)
+	public function __construct(array $responseFields, $originalMessage, $type, $mode = self::CONSTRUCT_NEW, TggAtos $module)
 	{
 		switch ($mode)
 		{
@@ -2516,7 +2528,7 @@ class TggAtosModuleResponseObject
 					foreach (self::$shortResponseUnavailableFields as $field)
 						array_splice($fields, array_search($field, $fields), 1);
 					if (count($responseFields) != count($fields))
-						TggAtos::error(__LINE__, 'Fields count mismatch in uncyphered response', 4, array('received fields' => $responseFields, 'known fields' => self::$fields), true, true);
+						$module->error(__LINE__, 'Fields count mismatch in uncyphered response', 4, array('received fields' => $responseFields, 'known fields' => self::$fields), true, true);
 				}
 				foreach ($fields as $pos => $name)
 					if (isset($responseFields[$pos]))
@@ -2565,9 +2577,9 @@ class TggAtosModuleResponseObject
 	 * @param array $data $name => $value hashmap
 	 * @return TggAtosModuleResponseObject
 	 */
-	public static function hydrate($data)
+	public static function hydrate($data, TggAtos $module)
 	{
-		return new self($data, null, null, self::CONSTRUCT_HYDRATE);
+		return new self($data, null, null, self::CONSTRUCT_HYDRATE, $module);
 	}
 }
 
@@ -2585,12 +2597,12 @@ class TggAtosModuleResponseOutputParser
 	 */
 	public $response;
 	
-	public function __construct(TggAtosModuleSystemCall $call, $originalMessage, $type)
+	public function __construct(TggAtosModuleSystemCall $call, $originalMessage, $type, TggAtos $module)
 	{
 		$output = explode('!', substr($call->last_line, 1));
 		$this->success = array_shift($output) == 0;
 		$this->error = array_shift($output);
 		if ($this->success)
-			$this->response = new TggAtosModuleResponseObject($output, $originalMessage, $type);
+			$this->response = new TggAtosModuleResponseObject($output, $originalMessage, $type, TggAtosModuleResponseObject::CONSTRUCT_NEW, $module);
 	}
 }
