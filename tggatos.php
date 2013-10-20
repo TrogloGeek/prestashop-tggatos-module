@@ -201,7 +201,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '3.0.1';
+		$this->version = '3.0.2';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.5.0.1';
 		$this->ps_versions_compliancy['max'] = '1.6';
