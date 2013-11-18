@@ -594,6 +594,7 @@ class TggAtos extends PaymentModule
 			}
 		}
 		$params['data'] = implode(';', $data);
+		$params['amount'] = str_pad((string)$params['amount'], 3, '0', STR_PAD_LEFT);
 		$params = array_merge($params,$mergeParams);
 		if (!isset($params['receipt_complement']))
 		{
