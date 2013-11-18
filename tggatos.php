@@ -594,7 +594,6 @@ class TggAtos extends PaymentModule
 			}
 		}
 		$params['data'] = implode(';', $data);
-		$params['amount'] = str_pad((string)$params['amount'], 3, '0', STR_PAD_LEFT);
 		$params = array_merge($params,$mergeParams);
 		if (!isset($params['receipt_complement']))
 		{
@@ -641,6 +640,7 @@ class TggAtos extends PaymentModule
 				unset($params['receipt_complement']);
 			}
 		}
+		$params['amount'] = str_pad((string)$params['amount'], 3, '0', STR_PAD_LEFT);
 		$call = $this->rawCall(self::BIN_REQUEST, $this->paramsToArgs($params));
 		if ($call->exit_code != 0)
 		{
