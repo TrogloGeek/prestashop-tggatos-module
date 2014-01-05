@@ -565,7 +565,7 @@ class TggAtos extends PaymentModule
 				$params['payment_means'] = $this->get(self::CNF_2TPAYMENT_MEANS);
 				$params['capture_mode'] = 'PAYMENT_N';
 				$params['capture_day'] = $this->get(self::CNF_2TPAYMENT_DELAY);
-				$initialAmount = $this->defaultCurrencyConvert($this->get(self::CNF_2TPAYMENT_FP_FXD), $currency, self::CONVERT_FROM_DEFAULT) + $this->get(self::CNF_2TPAYMENT_FP_PCT) * $amount;
+				$initialAmount = $this->defaultCurrencyConvert($this->get(self::CNF_2TPAYMENT_FP_FXD), $currency, self::CONVERT_FROM_DEFAULT) + $this->get(self::CNF_2TPAYMENT_FP_PCT) / 100 * $amount;
 				if ($currency->decimals)
 					$initialAmount *= 100;
 				$initialAmount = str_pad((string)intval(Tools::ps_round($initialAmount)), 3, '0', STR_PAD_LEFT);
@@ -575,7 +575,7 @@ class TggAtos extends PaymentModule
 				$params['payment_means'] = $this->get(self::CNF_3TPAYMENT_MEANS);
 				$params['capture_mode'] = 'PAYMENT_N';
 				$params['capture_day'] = $this->get(self::CNF_3TPAYMENT_DELAY);
-				$initialAmount = $this->defaultCurrencyConvert($this->get(self::CNF_3TPAYMENT_FP_FXD), $currency, self::CONVERT_FROM_DEFAULT) + $this->get(self::CNF_3TPAYMENT_FP_PCT) * $amount;
+				$initialAmount = $this->defaultCurrencyConvert($this->get(self::CNF_3TPAYMENT_FP_FXD), $currency, self::CONVERT_FROM_DEFAULT) + $this->get(self::CNF_3TPAYMENT_FP_PCT) / 100 * $amount;
 				if ($currency->decimals)
 					$initialAmount *= 100;
 				$initialAmount = str_pad((string)intval(Tools::ps_round($initialAmount)), 3, '0', STR_PAD_LEFT);
