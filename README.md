@@ -80,3 +80,6 @@ I initiated this project because I have good experience with ATOS/SIPS gateway a
 
 #### What if I want a gateway offering more warranties?
 I don't know, sorry, I created this one because I did not trust existing others, so I can't help you finding a more reliable module.
+
+[by TrogloGeek](//plus.google.com/117473197520914751616/about?rel=author")
+[Project's blog](http://prestashop.blog.capillotracteur.fr/category/modules/tgg-atos-sips-prestashop-module-gratuit/)
