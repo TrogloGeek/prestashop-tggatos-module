@@ -1,4 +1,4 @@
-# TggAtos Module for Prestashop 1.5
+# TggAtos Module for Prestashop 1.5 and Prestashop 1.6
 ## ATOS SIPS 600 payment gateway
 
 ###### This module helped you earning money ?
@@ -47,9 +47,10 @@ Sorry, it is a french blog, but they can be submitted in english as well.
 - (you) basic undestanding of the way an ATOS SIPS gateway works and it's configuration
 
 #### Installation (differences with a simple PrestaShop module)
+- Make sure the module folder is named `tggatos`, the project content must be located in `modules/tggatos`.
 - Replace `tggatos/bin/` content with binaries compatible with your system provided by your SIPS service provider
 - Update `tggatos/param/parmcom.<sips_service_provider_codename>` with content of default parmcom provided by your SIPS service provider 
-- `tggatos/bin/` folder, it's content and upper folders in file system needs execution right set to PHP user
+- `tggatos/bin/` folder, it's content and upper folders in file system need execution right set to PHP user
 - `tggatos/param/` folder and it's content must be writable by PHP user
 - `tggatos/log/` folder must be writable by PHP user
 - Install module
