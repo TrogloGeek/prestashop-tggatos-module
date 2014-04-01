@@ -1,6 +1,6 @@
 ###############################################################################
 #
-#	Fichier des paramètres par défaut SIPS
+#	Fichier des parametres par defaut SIPS
 #
 #
 ###############################################################################
@@ -25,7 +25,7 @@ HEADER_FLAG!yes!
 
 TEXTCOLOR!000000!
 
-
+MERCHANT_COUNTRY!fr!
 
 # END OF FILE
 
