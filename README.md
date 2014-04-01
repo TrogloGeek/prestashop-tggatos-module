@@ -1,4 +1,4 @@
-# TggAtos Module for Prestashop 1.5
+# TggAtos Module for Prestashop 1.5 and Prestashop 1.6
 ## ATOS SIPS 600 payment gateway
 
 ###### This module helped you earning money ?
