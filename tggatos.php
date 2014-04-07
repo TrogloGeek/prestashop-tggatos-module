@@ -127,6 +127,7 @@ class TggAtos extends PaymentModule
 	const CNF_RETURN_DOMAIN_USER = 'RETURN_DOMAIN_USER';
 	const CNF_RETURN_DOMAIN_SILENT = 'RETURN_DOMAIN_SILENT';
 	const CNF_DEBUG_MODE = 'DEBUG_MODE';
+	const CNF_TID_TZ = 'TID_TZ';
 	
 	//23TIMES conf
 	const CNF_2TPAYMENT = '2TPAYMENT';
@@ -203,7 +204,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '3.1.0';
+		$this->version = '3.2.0';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.5.0.1';
 		$this->ps_versions_compliancy['max'] = '1.6';
@@ -908,13 +909,21 @@ class TggAtos extends PaymentModule
 	public function generateTransactionId()
 	{
 		$DB = Db::getInstance(true);
+		$timezoneStr = $this->get(self::CNF_TID_TZ);
+		if (empty($timezoneStr))
+		{
+			$timezoneStr = 'UTC';
+		}
+		$timezone = new DateTimeZone($timezoneStr);
+		$yesterday = new DateTime('-1 day', $timezone);
 		//We don't clean yesterday's records to avoid clustering problems with bad time sync arround midnight
-		$DB->delete($this->getTable(self::TABLE_TRANSACTION_TODAY, false), '`date` < \''.date('Y-m-d', strtotime('-1 day')).'\'');
-		$tid = $this->generateTransactionIdNoCheck($DB);
+		$DB->delete($this->getTable(self::TABLE_TRANSACTION_TODAY, false), '`date` < \''.$yesterday->format('Y-m-d').'\'');
+		$now = new DateTime('now', $timezone);
+		$tid = $this->generateTransactionIdNoCheck($DB, $now);
 		if ($tid < $this->get(self::CNF_MIN_TID))
 		{
-			$DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), array('date' => date('Y-m-d'), 'transaction_id' => $this->get(self::CNF_MIN_TID) - 1), false, false, Db::INSERT_IGNORE);
-			$tid = $this->generateTransactionIdNoCheck($DB);
+			$DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), array('date' => $now->format('Y-m-d'), 'transaction_id' => $this->get(self::CNF_MIN_TID) - 1), false, false, Db::INSERT_IGNORE);
+			$tid = $this->generateTransactionIdNoCheck($DB, $now);
 		}
 		if ($tid > $this->get(self::CNF_MAX_TID))
 			return false;
@@ -926,9 +935,9 @@ class TggAtos extends PaymentModule
 	 * @throws PrestaShopDatabaseException
 	 * @return string
 	 */
-	public function generateTransactionIdNoCheck(Db $DB)
+	public function generateTransactionIdNoCheck(Db $DB, DateTime $date)
 	{
-		if (!$DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), array('date' => date('Y-m-d'))))
+		if (!$DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), array('date' => $date->format('Y-m-d'))))
 			throw new PrestaShopDatabaseException();
 		return $DB->Insert_ID();
 	}
@@ -1425,6 +1434,15 @@ class TggAtos extends PaymentModule
 					'hint' => $this->l('ATOS API will be called without transaction ID, meaning that it will be set to HHMMSS according to server\'s time when calling ATOS API, which can cause a lot of problems (less transactions possible per days, possible collisions between clients, much less safe than segmenting available IDs between websites when using single certificate on multiple websites).'),
 					'atos' => 'transaction_id',
 					'default' => FALSE
+				),
+				self::CNF_TID_TZ => array(
+					'type' => self::T_STRING,
+					'input' => self::IN_SELECT,
+					'description' => $this->l('transaction_id time zone'),
+					'hint' => Tools::htmlentitiesDecodeUTF8(sprintf($this->l('Allows to sync transaction_id sequence resetting with SIPS servers midnight. Ask you SIPS support what you should select here. Unused if option "%s" is checked.'), $this->l('Don\'t generate transaction ID'))),
+					'atos' => 'transaction_id',
+					'values' => TggAtosModuleFunctionCall::factory('getTimeZonesArraySelect'),
+					'default' => FALSE,
 				),
 				self::CNF_MIN_TID => array(
 					'type' => self::T_ABS_POSITIVE_INT,
@@ -1976,6 +1994,11 @@ class TggAtos extends PaymentModule
 			$errorsIndex['BASIC']++;
 			$this->_errors[] = $this->l('No production certificate selected.');
 		}
+		if (!$this->get(self::CNF_NO_TID_GENERATION) && !$this->get(self::CNF_TID_TZ))
+		{
+			$errorsIndex['ADVANCED']++;
+			$this->_errors[] = $this->l('Your transaction_id time zone is not set.');
+		}
 		if ($this->get(self::CNF_DEBUG_MODE))
 		{
 			$errorsIndex['ADVANCED']++;
@@ -2216,6 +2239,13 @@ class TggAtos extends PaymentModule
 				$this->_currenciesArraySelectCache[$currency['iso_code']] = $currency['name'];
 		}
 		return $this->_currenciesArraySelectCache;
+	}
+	
+	public function getTimeZonesArraySelect()
+	{
+		$array = DateTimeZone::listIdentifiers();
+		array_unshift($array, '');
+		return $this->_mirrorArray($array);
 	}
 	
 	/**
