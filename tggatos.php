@@ -204,7 +204,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '3.2.0';
+		$this->version = '3.2.1';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.5.0.1';
 		$this->ps_versions_compliancy['max'] = '1.6';
@@ -720,6 +720,15 @@ class TggAtos extends PaymentModule
 					case 3:
 						$mode = self::MODE_3TPAYMENT;
 				}
+				/* We have to reserve the transaction_id for automatic payments */
+				$timezone = new DateTimeZone($this->get(self::CNF_TID_TZ));
+				$paymentDate = DateTime::createFromFormat('Ymd', $response->payment_date, $timezone);
+				$period = new DateInterval(sprintf('P%uD', intval($response->getDataVar('PERIOD'))));
+				for ($pn = 1; $pn < $response->getDataVar('NB_PAYMENT'); $pn++)
+				{
+					$paymentDate->add($period);
+					$this->reserveTransactionId(DB::getInstance(), $paymentDate, $response->transaction_id, false, true);
+				}
 			} else {
 				$mode = self::MODE_SINGLE;
 			}
@@ -919,11 +928,11 @@ class TggAtos extends PaymentModule
 		//We don't clean yesterday's records to avoid clustering problems with bad time sync arround midnight
 		$DB->delete($this->getTable(self::TABLE_TRANSACTION_TODAY, false), '`date` < \''.$yesterday->format('Y-m-d').'\'');
 		$now = new DateTime('now', $timezone);
-		$tid = $this->generateTransactionIdNoCheck($DB, $now);
+		$tid = $this->reserveTransactionId($DB, $now);
 		if ($tid < $this->get(self::CNF_MIN_TID))
 		{
-			$DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), array('date' => $now->format('Y-m-d'), 'transaction_id' => $this->get(self::CNF_MIN_TID) - 1), false, false, Db::INSERT_IGNORE);
-			$tid = $this->generateTransactionIdNoCheck($DB, $now);
+			$this->reserveTransactionId($DB, $now, $this->get(self::CNF_MIN_TID) - 1, false, true);
+			$tid = $this->reserveTransactionId($DB, $now);
 		}
 		if ($tid > $this->get(self::CNF_MAX_TID))
 			return false;
@@ -932,13 +941,25 @@ class TggAtos extends PaymentModule
 	
 	/**
 	 * @param Db $DB
+	 * @param DateTime $date
+	 * @param int|null $id Set to null to autogenerate
+	 * @param bool $throwException Wether an expect should be thrown on failure
+	 * @param bool $ignoreDuplicate Wether an ID reservation duplicate should be handled as an error
 	 * @throws PrestaShopDatabaseException
 	 * @return string
 	 */
-	public function generateTransactionIdNoCheck(Db $DB, DateTime $date)
+	public function reserveTransactionId(Db $DB, DateTime $date, $id = null, $throwException = true, $ignoreDuplicate = false)
 	{
-		if (!$DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), array('date' => $date->format('Y-m-d'))))
-			throw new PrestaShopDatabaseException();
+		$data = array('date' => $date->format('Y-m-d'));
+		if (!is_null($id)) {
+			$data['transaction_id'] = $id;
+		}
+		if (!$DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), $data, false, false, $ignoreDuplicate ? Db::INSERT_IGNORE : Db::INSERT)) {
+			if ($throwException) {
+				throw new PrestaShopDatabaseException();
+			}
+			return null;
+		}
 		return $DB->Insert_ID();
 	}
 	
@@ -1084,7 +1105,6 @@ class TggAtos extends PaymentModule
 					'description' => $this->l('Select capture delay'),
 					'hint' => $this->l('See ATOS doc. about capture mode.'),
 					'atos' => 'capture_day',
-					'autofeed' => true,
 					'values' => range(0,99),
 					'default' => 0
 				),
