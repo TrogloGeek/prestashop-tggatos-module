@@ -1600,6 +1600,7 @@ class TggAtos extends PaymentModule
 					'description' => $this->l('Allows to configure controls on payments, please ask your SIPS provider for the appropriate documentation'),
 					'atos' => 'data[CONTROLS]',
 					'hint' => 'Content will be wrapped into <CONTROLS> tags, do not input these tags! Line ending will be stripped off, so you can use them for a better readability.',
+					'width' => '100%',
 					'default' => ''
 				),
 				self::CNF_CUSTOM_DATA => array(
@@ -1607,6 +1608,7 @@ class TggAtos extends PaymentModule
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Allows to append custom parameters to the SIPS data field'),
 					'atos' => 'data',
+					'width' => '100%',
 					'default' => ''
 				)
 			),
@@ -1746,7 +1748,7 @@ class TggAtos extends PaymentModule
 							break;
 						case self::IN_TEXTAREA:
 							$html .= '
-									<textarea cols="80" lines="10" name="tggatos_'.Tools::htmlentitiesUTF8($name).'" id="tggatos_conffield_'.Tools::htmlentitiesUTF8($name).'" >'.Tools::htmlentitiesUTF8($this->get($name)).'</textarea>
+									<textarea cols="80" lines="10" name="tggatos_'.Tools::htmlentitiesUTF8($name).'" id="tggatos_conffield_'.Tools::htmlentitiesUTF8($name).'" style="'.$styles.'">'.Tools::htmlentitiesUTF8($this->get($name)).'</textarea>
 							';
 							break;
 						case self::IN_SELECT:
