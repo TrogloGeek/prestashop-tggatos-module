@@ -2297,22 +2297,27 @@ class TggAtos extends PaymentModule
 	{
 		$error = $file.'('.$line.'): '.$message;
 		$errorlog = $error;
+		$fullError = $error.(is_null($object) ? '' : PHP_EOL.'debug object: '.print_r($object, true));
+		$errorlog = $fullError;
 		if (!is_null($object))
 		{
-			//@todo: find an actual good solution to be able to log anything without any loss of information
 			$objectOutput = print_r($object, true);
-			if (!Validate::isMessage($objectOutput))
-				$objectOutput = sprintf(
-						'Can\'t dump debug object `%s` to Prestashop logger, please see `%s` in module\'s log directory.',
-						is_object($object)
-							? get_class($object)
-							: gettype($object),
-						self::FILE_ERROR_LOG
-				);
-			$errorlog = $error.(is_null($object) ? '' : PHP_EOL.'debug object: '.$objectOutput);
+			$loggerMessageDefinition = ObjectModel::getDefinition('Logger', 'message');
+			if ($loggerMessageDefinition['validate'] === 'isMessage')
+			{
+				if (!Validate::isMessage($objectOutput))
+				{
+					$errorlog = $error .PHP_EOL.'debug object: '.sprintf(
+							'Can\'t dump debug object `%s` to Prestashop logger, please see `%s` in module\'s log directory.',
+							is_object($object)
+								? get_class($object)
+								: gettype($object),
+							self::FILE_ERROR_LOG
+					);
+				}
+			}
 		}
 		Logger::addLog($errorlog);
-		$fullError = $error.(is_null($object) ? '' : PHP_EOL.'debug object: '.print_r($object, true));
 		$logfile = $this->get(self::CNF_LOG_PATH) . self::FILE_ERROR_LOG;
 		$logFileHandle = fopen($logfile, 'a');
 		if (is_resource($logFileHandle))
