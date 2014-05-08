@@ -14,6 +14,7 @@ class TggAtos extends PaymentModule
 	const IN_SELECT = 2;
 	const IN_CHECKBOX = 3;
 	const IN_INTERNAL = 4;
+	const IN_TEXTAREA = 5;
 	
 	const T_NONE = 0;
 	const T_BOOL = 1;
@@ -85,6 +86,7 @@ class TggAtos extends PaymentModule
 	const CNF_CHECK_VERSION = 'CHECK_VERSION';
 	const CNF_OS_PAYMENT_CANCELLED = 'OS_PAYMENT_CANCELLED';
 	const CNF_OS_PAYMENT_FAILED = 'OS_PAYMENT_FAILED';
+	const CNF_OS_NONZERO_COMPCODE = 'OS_NONZERO_COMPCODE';
 	
 	//SINGLE conf
 	const CNF_SINGLE = 'SINGLE';
@@ -128,6 +130,8 @@ class TggAtos extends PaymentModule
 	const CNF_RETURN_DOMAIN_SILENT = 'RETURN_DOMAIN_SILENT';
 	const CNF_DEBUG_MODE = 'DEBUG_MODE';
 	const CNF_TID_TZ = 'TID_TZ';
+	const CNF_DATA_CONTROLS = 'DATA_CONTROLS';
+	const CNF_CUSTOM_DATA = 'CUSTOM_DATA';
 	
 	//23TIMES conf
 	const CNF_2TPAYMENT = '2TPAYMENT';
@@ -165,7 +169,9 @@ class TggAtos extends PaymentModule
 	/**
 	 * @var array
 	 */
-	private $_newConfVars = array();
+	private $_newConfVars = array(
+		'3.3.0' => array(self::CNF_OS_NONZERO_COMPCODE, self::CNF_DATA_CONTROLS, self::CNF_CUSTOM_DATA)
+	);
 	
 	private $_banks = array(
 		'' => '',
@@ -204,7 +210,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '3.2.1';
+		$this->version = '3.3.0';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.5.0.1';
 		$this->ps_versions_compliancy['max'] = '1.6';
@@ -585,6 +591,12 @@ class TggAtos extends PaymentModule
 		}
 		if ($this->get(self::CNF_FORCE_RETURN))
 			array_push($data, 'NO_RESPONSE_PAGE');
+		$controls = str_replace("\n", '', str_replace("\r", '', $this->get(self::CNF_DATA_CONTROLS)));
+		if (!empty($controls))
+		{
+			array_push($data, '<CONTROLS>'.$controls.'</CONTROLS>');
+		}
+		unset($controls);
 		$this->initConfVars();
 		foreach ($this->_confVarsByName as $name => $varconf)
 			if (!empty($varconf['autofeed']) && !empty($varconf['atos']))
@@ -600,6 +612,13 @@ class TggAtos extends PaymentModule
 				unset($mergeData);
 			}
 		}
+		$customData = trim($this->get(self::CNF_CUSTOM_DATA), ' ;');
+		if (!empty($customData))
+		{
+			$customData = explode(';', $customData);
+			$data = array_merge($data, $customData);
+		}
+		unset($customData);
 		$params['data'] = implode(';', $data);
 		$params = array_merge($params,$mergeParams);
 		if (!isset($params['receipt_complement']))
@@ -745,6 +764,14 @@ class TggAtos extends PaymentModule
 							break;
 						case self::MODE_3TPAYMENT:
 							$orderState = $this->get(self::CNF_3TPAYMENT_OS);
+							break;
+					}
+					switch ($response->complementary_code)
+					{
+						case '00':
+							break;
+						default:
+							$orderState = $this->get(self::CNF_OS_NONZERO_COMPCODE);
 							break;
 					}
 					break;
@@ -1064,6 +1091,13 @@ class TggAtos extends PaymentModule
 					'description' => $this->l('Order state to apply on payment fail return'),
 					'values' => TggAtosModuleFunctionCall::factory('getOrderStatesSelectArray', array($this->l('No order creation'))),
 					'default' => 0
+				),
+				self::CNF_OS_NONZERO_COMPCODE => array(
+					'type' => self::T_UNSIGNED_INT,
+					'input' => self::IN_SELECT,
+					'description' => $this->l('Order state to apply on payment success with a non zero complementary_code'),
+					'values' => TggAtosModuleFunctionCall::factory('getOrderStatesSelectArray'),
+					'default' => Configuration::get('PS_OS_PAYMENT')
 				),
 			),
 			'SINGLE' => array(
@@ -1560,6 +1594,21 @@ class TggAtos extends PaymentModule
 					'hint' => $this->l('Prints debug outputs alongside with payment redirection form. To allow internal module exceptions to be displayed too, set _PS_MODE_DEV_ Prestashop constant to TRUE in prestashop/config/defines.inc.php.'),
 					'default' => FALSE
 				),
+				self::CNF_DATA_CONTROLS => array(
+					'type' => self::T_STRING,
+					'input' => self::IN_TEXTAREA,
+					'description' => $this->l('Allows to configure controls on payments, please ask your SIPS provider for the appropriate documentation'),
+					'atos' => 'data[CONTROLS]',
+					'hint' => 'Content will be wrapped into <CONTROLS> tags, do not input these tags! Line ending will be stripped off, so you can use them for a better readability.',
+					'default' => ''
+				),
+				self::CNF_CUSTOM_DATA => array(
+					'type' => self::T_STRING,
+					'input' => self::IN_TEXT,
+					'description' => $this->l('Allows to append custom parameters to the SIPS data field'),
+					'atos' => 'data',
+					'default' => ''
+				)
 			),
 		);
 		$this->_confVarsByName = array();
@@ -1693,6 +1742,11 @@ class TggAtos extends PaymentModule
 						case self::IN_TEXT:
 							$html .= '
 									<input type="text" name="tggatos_'.Tools::htmlentitiesUTF8($name).'" id="tggatos_conffield_'.Tools::htmlentitiesUTF8($name).'" value="'.Tools::htmlentitiesUTF8($this->get($name)).'" style="'.$styles.'" />
+							';
+							break;
+						case self::IN_TEXTAREA:
+							$html .= '
+									<textarea cols="80" lines="10" name="tggatos_'.Tools::htmlentitiesUTF8($name).'" id="tggatos_conffield_'.Tools::htmlentitiesUTF8($name).'" >'.Tools::htmlentitiesUTF8($this->get($name)).'</textarea>
 							';
 							break;
 						case self::IN_SELECT:
