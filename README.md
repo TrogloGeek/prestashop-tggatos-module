@@ -10,7 +10,7 @@ Suggested donation: 25 &euro; for basic user, 80 &euro; for professionals which 
 
 Donations help me to find time to develop and maintain the module and to answer support requests.
 
-### Release 3.3.0
+### Release 3.3.1
 
 #### RELEASE-CANDIDATE feedback requests
 - Check that silent response works well (not yet checked due the use of a local virtual machine as server)
