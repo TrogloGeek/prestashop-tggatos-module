@@ -611,6 +611,7 @@ class TggAtos extends PaymentModule
 				$data = array_merge($data, $mergeData);
 				unset($mergeData);
 			}
+			unset($mergeParams['data']);
 		}
 		$customData = trim($this->get(self::CNF_CUSTOM_DATA), ' ;');
 		if (!empty($customData))
