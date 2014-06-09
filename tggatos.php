@@ -129,6 +129,7 @@ class TggAtos extends PaymentModule
 	const CNF_RETURN_DOMAIN_USER = 'RETURN_DOMAIN_USER';
 	const CNF_RETURN_DOMAIN_SILENT = 'RETURN_DOMAIN_SILENT';
 	const CNF_DEBUG_MODE = 'DEBUG_MODE';
+	const CNF_DEBUG_GID = 'DEBUG_GID';
 	const CNF_TID_TZ = 'TID_TZ';
 	const CNF_DATA_CONTROLS = 'DATA_CONTROLS';
 	const CNF_CUSTOM_DATA = 'CUSTOM_DATA';
@@ -667,6 +668,21 @@ class TggAtos extends PaymentModule
 				unset($params['receipt_complement']);
 			}
 		}
+		if ($this->getDebugMode() && Tools::isSubmit('tggatos_override_submit')) {
+			$overrides = trim(Tools::getValue('tggatos_override'));
+			if ($overrides) {
+				$overrides = explode(PHP_EOL, $overrides);
+				$overridesParams = array();
+				foreach ($overrides as $override) {
+					if (strpos($override, '=') === false) {
+						continue;
+					}
+					$overrideKeyValue = explode('=', $override, 2);
+					$overridesParams[trim($overrideKeyValue[0])] = trim($overrideKeyValue[1]);
+				}
+			}
+			$params = array_merge($params, $overridesParams);
+		}
 		$params['amount'] = str_pad((string)$params['amount'], 3, '0', STR_PAD_LEFT);
 		$call = $this->rawCall(self::BIN_REQUEST, $this->paramsToArgs($params));
 		if ($call->exit_code != 0)
@@ -680,7 +696,21 @@ class TggAtos extends PaymentModule
 			$this->error(__LINE__, 'Atos invocation returned an error: '.$call->command, 4, $result);
 			return false;
 		}
-		return ($this->get(self::CNF_DEBUG_MODE) && !empty($result->error)) ? $result->error : $result->form;
+		if ($this->getDebugMode())
+		{
+			$retval = 
+				'<form action="" method="POST">'
+					.'<label style="display: block; width: 100%;">'
+						.$this->l('Testing overrides, enter here any command line parameter to override, one per line')
+						.'<br />'
+						.'<textarea name="tggatos_override" cols="80" rows="10" style="display: block; width: 100%;">'.Tools::htmlentitiesUTF8(Tools::getValue('tggatos_override', 'parameter = value')).'</textarea>'
+					.'</label>'
+					.'<input type="submit" name="tggatos_override_submit" value="'.Tools::htmlentitiesUTF8($this->l('Submit')).'" style="display: block; width: 100%;" />'
+				.'</form>'
+				. (empty($result->error) ? $result->form : $result->error);
+			return $retval;
+		}
+		return $result->form;
 	}
 	
 	/**
@@ -938,6 +968,16 @@ class TggAtos extends PaymentModule
 			$domain = ($protocol == self::RETURN_PROTOCOL_HTTPS) ? Tools::getShopDomainSsl(false) : Tools::getShopDomain(false);
 		}
 		return $protocol.$domain.$controller;
+	}
+	
+	public function getDebugMode()
+	{
+		return $this->get(self::CNF_DEBUG_MODE)
+				|| (
+					($gid = $this->get(self::CNF_DEBUG_GID))
+					&& in_array($gid, $this->context->customer->getGroups(), false)
+				)
+		;
 	}
 	
 	/**
@@ -1592,8 +1632,16 @@ class TggAtos extends PaymentModule
 					'input' => self::IN_CHECKBOX,
 					'description' => $this->l('Debug mode'),
 					'pathfile' => 'DEBUG',
-					'hint' => $this->l('Prints debug outputs alongside with payment redirection form. To allow internal module exceptions to be displayed too, set _PS_MODE_DEV_ Prestashop constant to TRUE in prestashop/config/defines.inc.php.'),
+					'hint' => $this->l('Prints debug outputs alongside with payment redirection form. To allow internal module exceptions to be displayed too, set _PS_MODE_DEV_ Prestashop constant to TRUE in prestashop/config/defines.inc.php. Also displays a textarea to allow testing overrides.'),
 					'default' => FALSE
+				),
+				self::CNF_DEBUG_GID => array(
+					'type' => self::T_INT,
+					'input' => self::IN_SELECT,
+					'description' => $this->l('PrestaShop debug group'),
+					'hint' => $this->l('Forces Debug mode for PrestaShop users which belong to this group. Does not allow to obtain debug output from SIPS API.'),
+					'default' => 0,
+					'values' => TggAtosModuleFunctionCall::factory('getUserGroupArraySelect')
 				),
 				self::CNF_DATA_CONTROLS => array(
 					'type' => self::T_STRING,
@@ -2328,6 +2376,17 @@ class TggAtos extends PaymentModule
 		$array = DateTimeZone::listIdentifiers();
 		array_unshift($array, '');
 		return $this->_mirrorArray($array);
+	}
+	
+	public function getUserGroupArraySelect()
+	{
+		$groups = Group::getGroups($this->context->language->id);
+		$groups_select = array(0 => '');
+		foreach ($groups as $group)
+		{
+			$groups_select[$group['id_group']] = $group['name'];
+		}
+		return $groups_select;
 	}
 	
 	/**
