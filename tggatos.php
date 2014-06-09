@@ -1641,7 +1641,12 @@ class TggAtos extends PaymentModule
 		$errorsIndex = $this->autoCheck();
 		$html = '
 		<h2>'.$this->displayName.'</h2>
-		<h3>'.$this->l('by').' '.$this->author.'</h3>
+		<dl>
+			<dt>'.$this->l('Version').'</dt>
+			<dd>'.$this->version.'</dd>
+			<dt>'.$this->l('Author').'</dt>
+			<dd>'.$this->author.'</dd>
+		</dl>
 		<style type="text/css" media="all">
 			#tggatoscontent input[type="text"],
 			#tggatoscontent select { display: block; box-sizing: border-box; }
