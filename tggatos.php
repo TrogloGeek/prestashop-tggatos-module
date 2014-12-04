@@ -1191,14 +1191,14 @@ class TggAtos extends PaymentModule
 					'default' => Configuration::get('PS_OS_PAYMENT')
 				),
 				self::CNF_PAYMENT_FEES => array(
-					'type' => self::T_UNSIGNED_FLOAT,
+					'type' => self::T_FLOAT,
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Apply fixed payment fees'),
 					'hint' => $this->l('This value is related to the selected default currency.'),
 					'default' => 0.0
 				),
 				self::CNF_PAYMENT_FEES_P => array(
-					'type' => self::T_UNSIGNED_FLOAT,
+					'type' => self::T_FLOAT,
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Apply fees relative to cart amount'),
 					'hint' => $this->l('Expressed in cart amount percent. Added to fixed fees.'),
@@ -1251,13 +1251,13 @@ class TggAtos extends PaymentModule
 					'default' => Configuration::get('PS_OS_PAYMENT')
 				),
 				self::CNF_2TPAYMENT_FEES => array(
-					'type' => self::T_UNSIGNED_FLOAT,
+					'type' => self::T_FLOAT,
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Apply fixed fees'),
 					'default' => 0.0
 				),
 				self::CNF_2TPAYMENT_FEES_P => array(
-					'type' => self::T_UNSIGNED_FLOAT,
+					'type' => self::T_FLOAT,
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Apply fees relative to cart amount'),
 					'hint' => $this->l('Added to fixed fees.'),
@@ -1326,13 +1326,13 @@ class TggAtos extends PaymentModule
 					'default' => Configuration::get('PS_OS_PAYMENT')
 				),
 				self::CNF_3TPAYMENT_FEES => array(
-					'type' => self::T_UNSIGNED_FLOAT,
+					'type' => self::T_FLOAT,
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Apply fixed fees'),
 					'default' => 0.0
 				),
 				self::CNF_3TPAYMENT_FEES_P => array(
-					'type' => self::T_UNSIGNED_FLOAT,
+					'type' => self::T_FLOAT,
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Apply fees relative to cart amount'),
 					'hint' => $this->l('Added to fixed fees.'),
