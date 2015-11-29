@@ -1,5 +1,8 @@
 <?php
-class TggAtosPaymentFailureModuleFrontController extends ModuleFrontController
+if (!class_exists('TggAtosModuleFrontController', false)) {
+	require_once implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__), 'TggAtosModuleFrontController.php'));
+}
+class TggAtosPaymentFailureModuleFrontController extends TggAtosModuleFrontController
 {
 	public $display_column_left = false;
 	public $ssl = true;
@@ -27,7 +30,7 @@ class TggAtosPaymentFailureModuleFrontController extends ModuleFrontController
 		$response = $this->module->getResponseFromLog(Tools::getValue('tggatos_date'), Tools::getValue('id_cart'), Tools::getValue('transaction_id'));
 		$currency = Currency::getCurrencyInstance(Currency::getIdByIsoCodeNum($response->currency_code));
 		/* @var $currency Currency */
-		$amount = floatval($response->amount);
+		$amount = (float)$response->amount;
 		if ($currency->decimals)
 			$amount /= 100;
 		$this->context->smarty->assign(array(

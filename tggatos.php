@@ -1,10 +1,10 @@
 <?php
 /**
  * Atos/SIPS connector for Prestashop 1.5.x
+ *
  * @license GNU/GPL version 3
  * @author Damien VERON (TrogloGeek)
- * @website http://prestashop.blog.capillotracteur.fr 
- *
+ * @website http://prestashop.blog.capillotracteur.fr
  */
 
 class TggAtos extends PaymentModule 
@@ -34,44 +34,48 @@ class TggAtos extends PaymentModule
 	const RETURN_PROTOCOL_AUTO = '';
 	const RETURN_PROTOCOL_HTTP = 'http://';
 	const RETURN_PROTOCOL_HTTPS = 'https://';
-	
+
 	const RETURN_DOMAIN_AUTO = '';
-	
+
 	const RETURN_CONTEXT_USER = 'user';
 	const RETURN_CONTEXT_SILENT = 'silent';
-	
-	const BANK_CONTROLLER_USER = 'autodispatch/userreturn.pub.php';
-	
+
+	const AUTODISPATCHING_MASK = 'autodispatch/%s.pub.php';
+	const CTRL_USER_RETURN = 'userreturn';
+	const CTRL_SILENT_RESPONSE = 'silentresponse';
+	const CTRL_PAYMENT_GATEWAY = 'paymentgateway';
+	const CTRL_PAYMENT_FAILURE = 'paymentfailure';
+
 	const BLOCK_ALIGN_CENTER = 'center';
 	const BLOCK_ALIGN_LEFT = 'left';
+
 	const BLOCK_ALIGN_RIGHT = 'right';
-	
 	const BIN_REQUEST = 'request';
+
 	const BIN_RESPONSE = 'response';
-	
 	const PATHFILE = 'pathfile';
 	const PARMCOM = 'parmcom';
+
 	const CERTIF = 'certif';
-	
 	const PATHFILE_VARLENGTH = 78;
+
 	const RECEIPT_COMPLEMENT_MAXLENGTH = 3072;
-	
 	const MODE_SINGLE = 1;
 	const MODE_2TPAYMENT = 2;
+
 	const MODE_3TPAYMENT = 3;
-	
+
 	const TABLE_TRANSACTION_TODAY = '_transactions_today';
-	
 	const ATOS_FIELD_TRANSACTION_ID = 'transaction_id';
 	const ATOS_FIELD_AUTHORISATION_ID = 'authorisation_id';
+
 	const ATOS_FIELD_PAYMENT_CERTIFICATE = 'payment_certificate';
-	
 	//INTERNAL conf
+
 	const CNF_VERSION = 'VERSION';
-	
 	const CONVERT_TO_DEFAULT = 1;
+
 	const CONVERT_FROM_DEFAULT = 2;
-	
 	//BASIC conf
 	const CNF_BANK = 'BANK';
 	const CNF_PRODUCTION = 'PRODUCTION';
@@ -86,16 +90,16 @@ class TggAtos extends PaymentModule
 	const CNF_CHECK_VERSION = 'CHECK_VERSION';
 	const CNF_OS_PAYMENT_CANCELLED = 'OS_PAYMENT_CANCELLED';
 	const CNF_OS_PAYMENT_FAILED = 'OS_PAYMENT_FAILED';
+
 	const CNF_OS_NONZERO_COMPCODE = 'OS_NONZERO_COMPCODE';
-	
 	//SINGLE conf
 	const CNF_SINGLE = 'SINGLE';
 	const CNF_PAYMENT_MEANS = 'PAYMENT_MEANS';
 	const CNF_MINAMOUNT = 'MINAMOUNT';
 	const CNF_OS_PAYMENT_SUCCESS = 'OS_PAYMENT_SUCCESS';
 	const CNF_PAYMENT_FEES = 'PAYMENT_FEES';
+
 	const CNF_PAYMENT_FEES_P = 'PAYMENT_FEES_P';
-	
 	//GRAPHIC conf
 	const CNF_CARD_IMG_PATH = 'CARD_IMG_PATH';
 	const CNF_BLOCK_ALIGN = 'BLOCK_ALIGN';
@@ -112,8 +116,8 @@ class TggAtos extends PaymentModule
 	const CNF_BG_IMAGE = 'BG_IMAGE';
 	const CNF_BG_COLOR = 'BG_COLOR';
 	const CNF_TXT_COLOR = 'TXT_COLOR';
+
 	const CNF_TXT_FONT = 'TXT_FONT';
-	
 	//ADVANCED conf
 	const CNF_NO_TID_GENERATION = 'NO_TID_GENERATION';
 	const CNF_MIN_TID = 'MIN_TID';
@@ -132,8 +136,8 @@ class TggAtos extends PaymentModule
 	const CNF_DEBUG_GID = 'DEBUG_GID';
 	const CNF_TID_TZ = 'TID_TZ';
 	const CNF_DATA_CONTROLS = 'DATA_CONTROLS';
+
 	const CNF_CUSTOM_DATA = 'CUSTOM_DATA';
-	
 	//23TIMES conf
 	const CNF_2TPAYMENT = '2TPAYMENT';
 	const CNF_2TPAYMENT_MEANS = '2TPAYMENT_MEANS';
@@ -154,10 +158,10 @@ class TggAtos extends PaymentModule
 	const CNF_3TPAYMENT_FEES = '3TPAYMENT_FEES';
 	const CNF_3TPAYMENT_FEES_P = '3TPAYMENT_FEES_P';
 	const CNF_3TPAYMENT_FP_FXD = '3TPAYMENT_FP_FXD';
+
 	const CNF_3TPAYMENT_FP_PCT = '3TPAYMENT_FP_PCT';
-	
 	const FILE_ERROR_LOG = 'error.log';
-	
+
 	/**
 	 * @var array
 	 */
@@ -207,25 +211,28 @@ class TggAtos extends PaymentModule
 	 */
 	public function __construct() 
 	{
-		$this->name = strtolower(get_class($this));
+		$this->name = 'tggatos';
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '3.4.0';
+		$this->version = '4.0.0';
 		$this->currencies_mode = 'checkbox';
-		$this->ps_versions_compliancy['min'] = '1.5.0.1';
+		$this->ps_versions_compliancy['min'] = '1.4.0.0';
 		$this->ps_versions_compliancy['max'] = '1.6';
 		parent::__construct();
-		if (empty($this->_path))
-			$this->_path = __PS_BASE_URI__.'modules/'.$this->name.'/';
+		if (empty($this->_path)) {
+			$this->_path = __PS_BASE_URI__ . 'modules/' . $this->name . '/';
+		}
+		if (empty($this->local_path)) {
+			$this->local_path = _PS_MODULE_DIR_.$this->name.'/';
+		}
 		$this->displayName = $this->l('CC Payment with SIPS/ATOS');
 		$this->description = $this->l('SIPS/ATOS payment module by TrogloGeek');
 		$this->confirmUninstall = $this->l('Uninstall this module will erase your configuration including current transaction ID, continue ?');
-		if ($this->context->employee instanceof Employee
-				&& $this->context->employee->isLoggedBack()
-				&& ($this->context->controller instanceof AdminModulesController)
-				&& !in_array($this->name, explode('|', Tools::getValue('configure', ''))))
-		{
+		/* Backward compatibility */
+		if (_PS_VERSION_ < '1.5')
+			require(_PS_MODULE_DIR_.$this->name.'/backward_compatibility/backward.php');
+		if (defined('_PS_ADMIN_DIR_')) {
 			$this->autoCheck();
 		}
 	}
@@ -238,7 +245,7 @@ class TggAtos extends PaymentModule
 	public function get($varname)
 	{
 		$this->initConfVars();
-		$value = Configuration::get(strtoupper($this->name).'_'.$varname);
+		$value = Configuration::get(Tools::strtoupper($this->name).'_'.$varname);
 		if ($this->_confVarsByName[$varname]['type'] == self::T_BOOL)
 			$value = (bool)$value;
 		return $value;
@@ -258,16 +265,16 @@ class TggAtos extends PaymentModule
 			case self::T_NONE:
 				return false;
 			case self::T_BOOL:
-				$value = intval((bool)$value);
+				$value = $value ? 1 : 0;
 				break;
 			case self::T_INT:
-				$value = intval($value);
+				$value = (int)$value;
 				break;
 			case self::T_UNSIGNED_INT:
-				$value = max(intval($value), 0);
+				$value = max((int)$value, 0);
 				break;
 			case self::T_ABS_POSITIVE_INT:
-				$value = max(intval($value), 1);
+				$value = max((int)$value, 1);
 				break;
 			case self::T_FLOAT:
 				if (is_string($value))
@@ -275,7 +282,7 @@ class TggAtos extends PaymentModule
 					$localeinfo = localeconv();
 					$value = preg_replace('/[.,]/', $localeinfo['decimal_point'], $value);
 				}
-				$value = floatval($value);
+				$value = (float)$value;
 				break;
 			case self::T_UNSIGNED_FLOAT:
 				if (is_string($value))
@@ -283,7 +290,7 @@ class TggAtos extends PaymentModule
 					$localeinfo = localeconv();
 					$value = preg_replace('/[.,]/', $localeinfo['decimal_point'], $value);
 				}
-				$value = max(floatval($value), 0.0);
+				$value = max((float)$value, 0.0);
 				break;
 			case self::T_STRING:
 			case self::T_URI:
@@ -295,12 +302,12 @@ class TggAtos extends PaymentModule
 			default:
 				throw new PrestaShopModuleException('Unknown type for confVar '.$varname);
 		}
-		return Configuration::updateValue(strtoupper($this->name).'_'.$varname, $value);
+		return Configuration::updateValue(Tools::strtoupper($this->name).'_'.$varname, $value);
 	}
 	
 	public function deleteVar($varname)
 	{
-		Configuration::deleteByName(strtoupper($this->name).'_'.$varname);
+		Configuration::deleteByName(Tools::strtoupper($this->name).'_'.$varname);
 	}
 	
 	public function getTable($table, $addPrefix = true)
@@ -315,41 +322,40 @@ class TggAtos extends PaymentModule
 			if (!parent::install()) {
 				throw new Exception($this->l('Fatal error: parent::install(): Prestashop internal module installation procedure failed, installation can\'t go any further.'));
 			}
-		} catch (Exception $e) 
-		{
+			// Hook subscriptions
+			$ps14hooks = array(
+				'displayPayment' => 'payment',
+				'displayPaymentReturn' => 'paymentReturn'
+			);
+			foreach (array('displayPayment', 'displayPaymentReturn') as $hook) {
+				if (version_compare(_PS_VERSION_, '1.5', '<') && isset($ps14hooks[$hook])) {
+					$hook = $ps14hooks[$hook];
+				}
+				if ($result) {
+					if (!$this->registerHook($hook)) {
+						$result = false;
+						$this->_errors[] = sprintf($this->l('Unable to subscribe to hook %s'), $hook);
+					}
+				}
+			}
+			// DB table creation
+			if ($result) {
+				$DB = Db::getInstance(TRUE);
+					if (!$DB->execute('
+						CREATE TABLE IF NOT EXISTS `'.$this->getTable(self::TABLE_TRANSACTION_TODAY).'` (
+							`date`				DATE				NOT NULL,
+							`transaction_id`	MEDIUMINT UNSIGNED	NOT NULL	AUTO_INCREMENT,
+							PRIMARY KEY (`date`,`transaction_id`)
+						)
+						ENGINE=MyISAM
+						;
+				', false)) {
+						throw new Exception(sprintf($this->l('Fatal error: Installation of the database table failed, error code: %u, error message: %s'), $DB->getNumberError(), $DB->getMsgError()));
+				}
+			}
+		} catch (Exception $e) {
 			$result = false;
 			$this->_errors[] = sprintf('%s(%u): %s'.PHP_EOL.'%s'.PHP_EOL.'%s', $e->getFile(), $e->getLine(), $e->getMessage(), $e->getTraceAsString(), $e->getPrevious());
-		}
-		foreach (array('displayPayment', 'displayPaymentReturn') as $hook)
-			if ($result)
-			{
-				if (!$this->registerHook($hook))
-				{
-					$result = false;
-					$this->_errors[] = sprintf($this->l('Unable to subscribe to hook %s'), $hook);
-				}
-			}
-		if ($result)
-		{
-			$DB = Db::getInstance(TRUE);
-			try {
-				if (!$DB->execute('
-					CREATE TABLE IF NOT EXISTS `'.$this->getTable(self::TABLE_TRANSACTION_TODAY).'` (
-						`date`				DATE				NOT NULL,
-						`transaction_id`	MEDIUMINT UNSIGNED	NOT NULL	AUTO_INCREMENT,
-						PRIMARY KEY (`date`,`transaction_id`)
-					)
-					ENGINE=MyISAM
-					;
-				', false)) {
-					throw new Exception(sprintf($this->l('Fatal error: Installation of the database table failed, error code: %u, error message: %s'), $DB->getNumberError(), $DB->getMsgError()));
-				}
-			}
-			catch (Exception $e)
-			{
-				$result = false;
-				$this->_errors[] = sprintf('%s(%u): %s'.PHP_EOL.'%s'.PHP_EOL.'%s', $e->getFile(), $e->getLine(), $e->getMessage(), $e->getTraceAsString(), $e->getPrevious());
-			}
 		}
 		if ($result)
 		{
@@ -359,6 +365,11 @@ class TggAtos extends PaymentModule
 		else 
 		{
 			parent::uninstall();
+		}
+		if ($this->_errors) {
+			foreach ($this->_errors as $error) {
+				$this->error(__LINE__, 'TggAtos Installation: '.$error);
+			}
 		}
 		return $result;
 	}
@@ -411,8 +422,8 @@ class TggAtos extends PaymentModule
 			{
 				if ($this->get(self::CNF_MIN_TID) > $this->get(self::CNF_MAX_TID))
 					return false;
-				$last_tid = Db::getInstance(TRUE)->getValue('SELECT max(transaction_id) as value FROM `'.$this->getTable(self::TABLE_TRANSACTION_TODAY).'` WHERE `date` = \''.date('Y-m-d').'\'', FALSE);
-				if (!empty($last_tid) && intval($last_tid) >= $this->get(self::CNF_MAX_TID))
+				$last_tid = (int)Db::getInstance(TRUE)->getValue('SELECT max(transaction_id) as value FROM `'.$this->getTable(self::TABLE_TRANSACTION_TODAY).'` WHERE `date` = \''.date('Y-m-d').'\'', FALSE);
+				if ($last_tid >= $this->get(self::CNF_MAX_TID))
 					return false;
 			}
 		}
@@ -422,6 +433,11 @@ class TggAtos extends PaymentModule
 				return false;
 		}
 		return true;
+	}
+
+	public function hookPayment($params)
+	{
+		return $this->hookDisplayPayment($params);
 	}
 	
 	/**
@@ -448,7 +464,7 @@ class TggAtos extends PaymentModule
 				$this->error(__LINE__, 'No transaction_id generated', 3, null, false);
 				return false;
 			}
-			$currency = Currency::getCurrencyInstance(intval($cart->id_currency));
+			$currency = Currency::getCurrencyInstance((int)$cart->id_currency);
 			$cartAmount = $cart->getOrderTotal();
 			$mergeParams = array(
 				'customer_id' => $this->context->customer->id,
@@ -504,19 +520,51 @@ class TggAtos extends PaymentModule
 			}
 			return $this->display(__FILE__, 'direct_payment.tpl');
 		} else {
+			$modeSingleLink = $this->getModuleLink(self::CTRL_PAYMENT_GATEWAY, array('mode' => self::MODE_SINGLE));
+			$mode2tLink = $this->getModuleLink(self::CTRL_PAYMENT_GATEWAY, array('mode' => self::MODE_2TPAYMENT));
+			$mode3tLink = $this->getModuleLink(self::CTRL_PAYMENT_GATEWAY, array('mode' => self::MODE_3TPAYMENT));
 			$this->smarty->assign(array(
-				'tggatos_modeSingleLink' => $this->context->link->getModuleLink($this->name, 'payment', array('mode' => self::MODE_SINGLE)),
-				'tggatos_mode2tLink' => $this->context->link->getModuleLink($this->name, 'payment', array('mode' => self::MODE_2TPAYMENT)),
-				'tggatos_mode3tLink' => $this->context->link->getModuleLink($this->name, 'payment', array('mode' => self::MODE_3TPAYMENT))
+				'tggatos_modeSingleLink' => $modeSingleLink,
+				'tggatos_mode2tLink' => $mode2tLink,
+				'tggatos_mode3tLink' => $mode3tLink
 			));
-			return $this->display(__FILE__, 'payment.tpl');
+			return $this->display(__FILE__, implode(DIRECTORY_SEPARATOR, array('views', 'templates', 'hook', 'payment.tpl')));
 		}
 	}
-	
+
+	public function getModuleLink($controller = 'default', array $params = array())
+	{
+		if (version_compare(_PS_VERSION_, '1.5', '>=')) {
+			//PrestaShop 1.5+
+			return $this->context->link->getModuleLink($this->name, $controller, $params);
+		} else {
+			//PrestaShop 1.4
+			return $this->getPathUri().sprintf(self::AUTODISPATCHING_MASK, $controller)
+			.(empty($params)
+				? ''
+				: '?'.http_build_query($params)
+			);
+		}
+	}
+
+	public function getPathUri()
+	{
+		if (version_compare(_PS_VERSION_, '1.5', '>=')) {
+			return parent::getPathUri();
+		} else {
+			return $this->_path;
+		}
+	}
+
+	public function hookPaymentReturn($params)
+	{
+		return $this->hookDisplayPaymentReturn($params);
+	}
+
 	public function hookDisplayPaymentReturn($params)
 	{
 		$this->smarty->assign('tggatos_response', $this->getResponseFromLog(Tools::getValue('tggatos_date'), Tools::getValue('id_cart'), Tools::getValue('transaction_id')));
-		return $this->display(__FILE__, 'payment_return.tpl');
+		return $this->display(__FILE__, 'views/templates/hook/payment_return.tpl');
 	}
 	
 	/**
@@ -539,7 +587,7 @@ class TggAtos extends PaymentModule
 			'language' => $this->get(self::CNF_ISO_LANG) ? $this->get(self::CNF_ISO_LANG) : $this->context->language->iso_code,
 			'merchant_id' => $this->get(self::CNF_PRODUCTION) ? $this->get(self::CNF_MERCHANT_ID) : $this->_demoCertificates[$this->get(self::CNF_BANK)],
 			'currency_code' => $currency->iso_code_num,
-			'amount' => intval(round($atosAmount)),
+			'amount' => (int)round($atosAmount),
 			'pathfile' => $this->get(self::CNF_PARAM_PATH).self::PATHFILE,
 			'normal_return_url' => $this->getBankReturnUri(self::RETURN_CONTEXT_USER),
 			'cancel_return_url' => $this->getBankReturnUri(self::RETURN_CONTEXT_USER),
@@ -547,9 +595,9 @@ class TggAtos extends PaymentModule
 		);
 		if (!empty($_SERVER['REMOTE_ADDR']))
 		{
-			$params['customer_ip_address'] = substr($_SERVER['REMOTE_ADDR'], max(0, strlen($_SERVER['REMOTE_ADDR']) - 20), min(19, strlen($_SERVER['REMOTE_ADDR'])));
+			$params['customer_ip_address'] = Tools::substr($_SERVER['REMOTE_ADDR'], max(0, Tools::strlen($_SERVER['REMOTE_ADDR']) - 20), min(19, Tools::strlen($_SERVER['REMOTE_ADDR'])));
 		}
-		if (strlen($this->context->customer->email) <= 128)
+		if (Tools::strlen($this->context->customer->email) <= 128)
 			$params['customer_email'] = $this->context->customer->email;
 		if (!is_null($transaction_id))
 		{
@@ -576,7 +624,7 @@ class TggAtos extends PaymentModule
 				$initialAmount = $this->defaultCurrencyConvert($this->get(self::CNF_2TPAYMENT_FP_FXD), $currency, self::CONVERT_FROM_DEFAULT) + $this->get(self::CNF_2TPAYMENT_FP_PCT) / 100 * $amount;
 				if ($currency->decimals)
 					$initialAmount *= 100;
-				$initialAmount = str_pad((string)intval(Tools::ps_round($initialAmount)), 3, '0', STR_PAD_LEFT);
+				$initialAmount = str_pad((string)(int)Tools::ps_round($initialAmount), 3, '0', STR_PAD_LEFT);
 				array_push($data, 'NB_PAYMENT=2', 'PERIOD='.$this->get(self::CNF_2TPAYMENT_SPACING), 'INITIAL_AMOUNT='.$initialAmount);
 				break;
 			case self::MODE_3TPAYMENT:
@@ -586,7 +634,7 @@ class TggAtos extends PaymentModule
 				$initialAmount = $this->defaultCurrencyConvert($this->get(self::CNF_3TPAYMENT_FP_FXD), $currency, self::CONVERT_FROM_DEFAULT) + $this->get(self::CNF_3TPAYMENT_FP_PCT) / 100 * $amount;
 				if ($currency->decimals)
 					$initialAmount *= 100;
-				$initialAmount = str_pad((string)intval(Tools::ps_round($initialAmount)), 3, '0', STR_PAD_LEFT);
+				$initialAmount = str_pad((string)(int)Tools::ps_round($initialAmount), 3, '0', STR_PAD_LEFT);
 				array_push($data, 'NB_PAYMENT=3', 'PERIOD='.$this->get(self::CNF_3TPAYMENT_SPACING), 'INITIAL_AMOUNT='.$initialAmount);
 				break;
 		}
@@ -636,7 +684,7 @@ class TggAtos extends PaymentModule
 				'tggatos_fromCharset' => 'UTF-8',
 				'tggatos_toCharset' => 'ISO-8859-1//TRANSLIT'
 			), null, true);
-			$params['receipt_complement'] = trim($this->display(__FILE__, 'param_receipt_complement.tpl'));
+			$params['receipt_complement'] = trim($this->display(__FILE__, 'views/templates/hook/param_receipt_complement.tpl'));
 			//Charsets can be overriden by in-template assignation with scope="parent"
 			$fromCharset = $this->smarty->getTemplateVars('tggatos_fromCharset');
 			$toCharset = $this->smarty->getTemplateVars('tggatos_toCharset');
@@ -644,7 +692,7 @@ class TggAtos extends PaymentModule
 			$this->smarty->clearAssign('tggatos_toCharset');
 			if (!empty($params['receipt_complement'])) {
 				$params['receipt_complement'] = iconv($fromCharset, $toCharset, $params['receipt_complement']);
-				if ($params['receipt_complement'] === FALSE) 
+				if ($params['receipt_complement'] === FALSE)
 				{
 					$this->error(__LINE__, sprintf('Iconv failed to convert encoding of receipt_complement from %s to %s', $fromCharset, $toCharset), 3);
 					unset($params['receipt_complement']);
@@ -654,13 +702,13 @@ class TggAtos extends PaymentModule
 					//Now we convert all non ASCII 128 character to an HTML entity as ATOS SIPS API is really old
 					// and seems to have problem with these characters. It's a waste of character, but it was my better idea
 					// to deal with it
-					for ($c = 0; $c < strlen($rawReceipt); $c++)
+					for ($c = 0; $c < Tools::strlen($rawReceipt); $c++)
 						if (ord($rawReceipt[$c]) <= 128)
 							$params['receipt_complement'] .= $rawReceipt[$c];
 						else
 							$params['receipt_complement'] .= '&#'.ord($rawReceipt[$c]).';';
-					if (strlen($params['receipt_complement']) > self::RECEIPT_COMPLEMENT_MAXLENGTH) {
-						$this->error(__LINE__, sprintf('Receipt complement is too long: %u characters long, %u characters max.', strlen($params['receipt_complement']), self::RECEIPT_COMPLEMENT_MAXLENGTH), 3, $params['receipt_complement']);
+					if (Tools::strlen($params['receipt_complement']) > self::RECEIPT_COMPLEMENT_MAXLENGTH) {
+						$this->error(__LINE__, sprintf('Receipt complement is too long: %u characters long, %u characters max.', Tools::strlen($params['receipt_complement']), self::RECEIPT_COMPLEMENT_MAXLENGTH), 3, $params['receipt_complement']);
 						unset($params['receipt_complement']);
 					}
 				}
@@ -749,7 +797,7 @@ class TggAtos extends PaymentModule
 		if (is_null($response))
 			throw new InvalidArgumentException('$response must be not null');
 		$this->logResponse($response);
-		$this->context->cart = new Cart(intval($response->order_id));
+		$this->context->cart = new Cart((int)$response->order_id);
 		if (!Validate::isLoadedObject($this->context->cart))
 			throw new PrestaShopModuleException('Payment cart cannot be loaded');
 		if (is_null($this->context->link))
@@ -773,7 +821,7 @@ class TggAtos extends PaymentModule
 				/* We have to reserve the transaction_id for automatic payments */
 				$timezone = new DateTimeZone($this->get(self::CNF_TID_TZ));
 				$paymentDate = DateTime::createFromFormat('Ymd', $response->payment_date, $timezone);
-				$period = new DateInterval(sprintf('P%uD', intval($response->getDataVar('PERIOD'))));
+				$period = new DateInterval(sprintf('P%uD', (int)$response->getDataVar('PERIOD')));
 				for ($pn = 1; $pn < $response->getDataVar('NB_PAYMENT'); $pn++)
 				{
 					$paymentDate->add($period);
@@ -799,6 +847,8 @@ class TggAtos extends PaymentModule
 					}
 					switch ($response->complementary_code)
 					{
+						case null:
+						case '':
 						case '00':
 							break;
 						default:
@@ -838,21 +888,21 @@ class TggAtos extends PaymentModule
 				$this->context->cart->secure_key
 			);
 			$order = new Order($this->currentOrder);
-			$orderPayments = OrderPayment::getByOrderReference($order->reference);
-			if (is_array($orderPayments) && count($orderPayments) == 1)
-			{
-				$orderPayment = array_shift($orderPayments);
-				/* @var $orderPayment OrderPayment */
-				$orderPayment->payment_method = $this->displayName;
-				$orderPayment->id_currency = $this->context->currency->id;
-				$orderPayment->conversion_rate = $this->context->currency->conversion_rate;
-				$orderPayment->card_brand = $response->payment_means;
-				$orderPayment->card_number = str_replace('.', ' #### #### ##', $response->card_number);
-				if ($response->capture_mode == 'PAYMENT_N')
-				{
-					$orderPayment->payment_method .= ' x'.$response->getDataVar('NB_PAYMENT');
+			if (version_compare(_PS_VERSION_, '1.5', '>=')) {
+				$orderPayments = OrderPayment::getByOrderReference($order->reference);
+				if (is_array($orderPayments) && count($orderPayments) == 1) {
+					$orderPayment = array_shift($orderPayments);
+					/* @var $orderPayment OrderPayment */
+					$orderPayment->payment_method = $this->displayName;
+					$orderPayment->id_currency = $this->context->currency->id;
+					$orderPayment->conversion_rate = $this->context->currency->conversion_rate;
+					$orderPayment->card_brand = $response->payment_means;
+					$orderPayment->card_number = str_replace('.', ' #### #### ##', $response->card_number);
+					if ($response->capture_mode == 'PAYMENT_N') {
+						$orderPayment->payment_method .= ' x' . $response->getDataVar('NB_PAYMENT');
+					}
+					$orderPayment->save();
 				}
-				$orderPayment->save();
 			}
 			return $order;
 		}
@@ -879,18 +929,18 @@ class TggAtos extends PaymentModule
 	public function defaultCurrencyConvert($amount, $currency, $direction)
 	{
 		if (is_numeric($currency))
-			$currency = Currency::getCurrencyInstance(intval($currency));
+			$currency = Currency::getCurrencyInstance((int)$currency);
 		if (!Validate::isLoadedObject($currency))
 			throw new PrestaShopModuleException('Argument $currency must be a Currency object or a valid currency ID');
-		$amount = floatval($amount);
+		$amount = (float)$amount;
 		if ($this->getDefaultCurrency()->conversion_rate != $currency->conversion_rate)
 			switch ($direction) 
 			{
 				case self::CONVERT_TO_DEFAULT:
-					$amount *= floatval($this->getDefaultCurrency()->conversion_rate) / floatval($currency->conversion_rate);
+					$amount *= (float)$this->getDefaultCurrency()->conversion_rate / (float)$currency->conversion_rate;
 					break;
 				case self::CONVERT_FROM_DEFAULT:
-					$amount /= floatval($this->getDefaultCurrency()->conversion_rate) / floatval($currency->conversion_rate);
+					$amount /= (float)$this->getDefaultCurrency()->conversion_rate / (float)$currency->conversion_rate;
 					break;
 				default:
 					throw new PrestaShopModuleException('Invalid Argument $direction (must be self::CONVERT_*)');
@@ -949,12 +999,12 @@ class TggAtos extends PaymentModule
 			case self::RETURN_CONTEXT_USER:
 				$protocol = $this->get(self::CNF_RETURN_PROTOCOL_USER);
 				$domain = $this->get(self::CNF_RETURN_DOMAIN_USER);
-				$controller = $this->getPathUri().self::BANK_CONTROLLER_USER;
+				$controller = $this->getPathUri().sprintf(self::AUTODISPATCHING_MASK, self::CTRL_USER_RETURN);
 				break;
 			case self::RETURN_CONTEXT_SILENT:
 				$protocol = self::RETURN_PROTOCOL_HTTP;
 				$domain = $this->get(self::CNF_RETURN_DOMAIN_SILENT);
-				$controller = preg_replace('@^(https?://[^/]+)?(/.*)$@', '$2', $this->context->link->getModuleLink($this->name, 'silentresponse'));
+				$controller = preg_replace('@^(https?://[^/]+)?(/.*)$@', '$2', $this->getModuleLink(self::CTRL_SILENT_RESPONSE));
 				break;
 			default:
 				throw new PrestaShopModuleException('Invalid Argument $context (must be self::RETURN_CONTEXT_*)');
@@ -1022,7 +1072,23 @@ class TggAtos extends PaymentModule
 		if (!is_null($id)) {
 			$data['transaction_id'] = $id;
 		}
-		if (!$DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), $data, false, false, $ignoreDuplicate ? Db::INSERT_IGNORE : Db::INSERT)) {
+		$result = null;
+		if (version_compare(_PS_VERSION_, '1.5', '>=')) {
+			$result = $DB->insert($this->getTable(self::TABLE_TRANSACTION_TODAY, false), $data, false, false, $ignoreDuplicate ? Db::INSERT_IGNORE : Db::INSERT);
+		} else {
+			$data_sql = array();
+			foreach ($data as $_key => $_value) {
+				$data_sql[] = '`'.$_key.'` = \''.pSQL($_value, true).'\'';
+			}
+			$result = $DB->Execute(
+				($ignoreDuplicate
+					? 'INSERT IGNORE'
+					: 'INSERT'
+				).' INTO `'.$this->getTable(self::TABLE_TRANSACTION_TODAY, true).'`
+				SET '.implode(', ', $data_sql)
+			);
+		}
+		if (!$result) {
 			if ($throwException) {
 				throw new PrestaShopDatabaseException();
 			}
@@ -1188,7 +1254,9 @@ class TggAtos extends PaymentModule
 					'input' => self::IN_SELECT,
 					'description' => $this->l('Select order state to apply on a successful payment'),
 					'values' => TggAtosModuleFunctionCall::factory('getOrderStatesSelectArray'),
-					'default' => Configuration::get('PS_OS_PAYMENT')
+					'default' => version_compare(_PS_VERSION_, '1.5', '>=')
+						? Configuration::get('PS_OS_PAYMENT')
+						: _PS_OS_PAYMENT_
 				),
 				self::CNF_PAYMENT_FEES => array(
 					'type' => self::T_UNSIGNED_FLOAT,
@@ -1369,7 +1437,7 @@ class TggAtos extends PaymentModule
 					'hint' => $this->l('Change this to use a custom card logos pack. You should put your logos in a theme sub-folder. An undocumented limitation of PATHFILE reader seems to limit this field to 78 characters.'),
 					'pathfile' => 'D_LOGO',
 					'width' => '100%',
-					'default' => $this->_path . 'images/card_logo/'
+					'default' => $this->_path . 'views/img/card_logo/'
 				),
 				self::CNF_BLOCK_ORDER => array(
 					'type' => self::T_STRING,
@@ -1674,7 +1742,9 @@ class TggAtos extends PaymentModule
 	public function getContent()
 	{
 		$this->initConfVars();
-		$this->context->controller->addJqueryUI(array('ui.tabs'));
+		if (method_exists($this->context->controller, 'addJqueryUI')) {
+			$this->context->controller->addJqueryUI(array('ui.tabs'));
+		}
 		foreach ($this->_confVars as $sectionName => $sectionVars)
 			if (( $sectionName != 'INTERNAL' ) && Tools::isSubmit('btnSubmit'.$sectionName))
 		{
@@ -1704,12 +1774,53 @@ class TggAtos extends PaymentModule
 			#tggatoscontent td { padding: 0.8em; border-bottom: 1px solid #ccc; }
 			#tggatoscontent th.comment { border-bottom: 1px solid #666; }
 			.ui-tooltip { text-align: left; }
-		</style>
+			#tggatosconfigtabs.tggatos-fake-ui li { display: inline-block; padding: 2px 4px;}
+			#tggatosconfigtabs.tggatos-fake-ui li a { text-decoration: underline; }
+			#tggatosconfigtabs.tggatos-fake-ui li.active { font-weight: bold; }
+		</style>'.(version_compare(_PS_VERSION_, '1.5', '<') ? '
 		<script type="text/javascript">
 			jQuery(function($) {
-				$(\'#tggatosconfigtabs\').tabs({ active: '.intval(Tools::getValue('tggatos_opennedPannel', 0)).' });
+				var $tabContainer = $(\'#tggatosconfigtabs\');
+				$tabContainer.addClass(\'tggatos-fake-ui\');
+				var $tabs = null;
+				var $targets = null;
+				$tabContainer.find(\'> ul > li\').each(function (idx, elmt) {
+					var $tab = $(elmt);
+					if ($tabs === null) {
+						$tabs = $(elmt);
+					} else {
+						$tabs = $tabs.add(elmt);
+					}
+					var $link = $tab.find(\'a\').first();
+					var target = $link.attr(\'href\');
+					var $target = $(target);
+					if ($targets === null) {
+						$targets = $(target);
+					} else {
+						$targets = $targets.add($target);
+					}
+					console.log($link, target, $target);
+					if (idx != '.(int)Tools::getValue('tggatos_opennedPannel', 0).') {
+						$target.hide();
+					} else {
+						$tab.addClass(\'active\');
+					}
+					$tab.click(function(evt) {
+						evt.preventDefault();
+						$tabs.removeClass(\'active\');
+						$tab.addClass(\'active\');
+						$targets.hide();
+						$target.show();
+					});
+				});
 			});
 		</script>
+		' : '
+		<script type="text/javascript">
+			jQuery(function($) {
+				$(\'#tggatosconfigtabs\').tabs({ active: '.(int)Tools::getValue('tggatos_opennedPannel', 0).' });
+			});
+		</script>').'
 		<div id="tggatoscontent">
 		';
 		if (!empty($this->_errors))
@@ -1731,7 +1842,7 @@ class TggAtos extends PaymentModule
 		if (file_exists($errorLog))
 		{
 			$html .= '<h4>' . $this->l('Error log') . ' <small>' . Tools::htmlentitiesUTF8($errorLog) . '</small></h4>
-			<p style="white-space: pre-wrap; border: 1px solid red; padding: 1em;">' . preg_replace('/^(\|\+&gt; [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:)/m', '<br /><strong style="font-size: larger;">$1</strong>', Tools::htmlentitiesUTF8(file_get_contents($errorLog))) . '</p>
+			<p style="white-space: pre-wrap; border: 1px solid red; padding: 1em;">' . preg_replace('/^(\|\+&gt; [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:)/m', '<br /><strong style="font-size: larger;">$1</strong>', Tools::htmlentitiesUTF8(Tools::file_get_contents($errorLog))) . '</p>
 			';
 		}
 		$html .= '
@@ -1844,19 +1955,19 @@ class TggAtos extends PaymentModule
 					if (!empty($declaration['atos']))
 					{
 						$html .= '
-									<strong title="'.Tools::htmlentitiesUTF8($this->l('ATOS parameter, cf parameters glossary in ATOS doc.')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'images/atos_icon.gif" width="16" height="16" />&nbsp;<em>'.$declaration['atos'].'</em></strong>
+									<strong title="'.Tools::htmlentitiesUTF8($this->l('ATOS parameter, cf parameters glossary in ATOS doc.')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'views/img/atos_icon.gif" width="16" height="16" />&nbsp;<em>'.$declaration['atos'].'</em></strong>
 						';
 					}
 					if (!empty($declaration['pathfile']))
 					{
 						$html .= '
-									<strong title="'.Tools::htmlentitiesUTF8($this->l('ATOS pathfile parameter, cf ATOS programmer\'s guide.')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'images/atos_icon.gif" width="16" height="16" />&nbsp;pathfile: <em>'.$declaration['pathfile'].'</em></strong>
+									<strong title="'.Tools::htmlentitiesUTF8($this->l('ATOS pathfile parameter, cf ATOS programmer\'s guide.')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'views/img/atos_icon.gif" width="16" height="16" />&nbsp;pathfile: <em>'.$declaration['pathfile'].'</em></strong>
 						';
 					}
 					if (!empty($declaration['parmcom']))
 					{
 						$html .= '
-									<strong title="'.Tools::htmlentitiesUTF8($this->l('This value is written in parmcom file to following configuration entry')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'images/atos_icon.gif" width="16" height="16" />&nbsp;parmcom: <em>'.$declaration['parmcom'].'</em></strong>
+									<strong title="'.Tools::htmlentitiesUTF8($this->l('This value is written in parmcom file to following configuration entry')).'" class="atosref"><img src="'.Tools::htmlentitiesUTF8($this->_path).'views/img/atos_icon.gif" width="16" height="16" />&nbsp;parmcom: <em>'.$declaration['parmcom'].'</em></strong>
 						';
 					}
 					$html .= '
@@ -1884,7 +1995,7 @@ class TggAtos extends PaymentModule
 	
 	public function generatePathfileContent()
 	{
-		return $pathfile_content = array(
+		return array(
 			'DEBUG' => $this->get(self::CNF_DEBUG_MODE) ? 'YES' : 'NO',
 			'D_LOGO' => $this->get(self::CNF_CARD_IMG_PATH),
 			'F_CERTIFICATE' => $this->get(self::CNF_PARAM_PATH) . self::CERTIF,
@@ -2042,7 +2153,7 @@ class TggAtos extends PaymentModule
 	public function getMerchantIdList($prependEmptyLine = FALSE) 
 	{
 		$prefix = 'certif.fr.';
-		$prefix_length = strlen($prefix);
+		$prefix_length = Tools::strlen($prefix);
 		$path = $this->get(self::CNF_PARAM_PATH);
 		if (!is_dir($path)) return FALSE;
 		$oldPath = getcwd();
@@ -2051,7 +2162,7 @@ class TggAtos extends PaymentModule
 		$codes = array();
 		foreach ($files as $file) 
 		{
-			$code = substr($file, $prefix_length);
+			$code = Tools::substr($file, $prefix_length);
 			if (preg_match('/^[0-9]{15}$/', $code)) 
 			{
 				if (in_array($code, $this->_demoCertificates)) continue;
@@ -2094,6 +2205,7 @@ class TggAtos extends PaymentModule
 		if (!Module::isInstalled($this->name)) return;
 		$this->initConfVars();
 		$this->warning = array();
+		$this->_errors = array();
 		$errorsIndex = array('BASIC' => 0, 'SINGLE' => 0, '2TIMES' => 0, '3TIMES' => 0, 'GRAPHIC' => 0, 'ADVANCED' => 0);
 		if (version_compare($this->version, $this->get(self::CNF_VERSION), '>'))
 			$this->postUpdate();
@@ -2167,7 +2279,7 @@ class TggAtos extends PaymentModule
 		}
 		foreach (array(self::BIN_REQUEST => array(), self::BIN_RESPONSE => array('message=012345')) as $bin => $args)
 		{
-			$systemCall = $this->rawCall($bin, $args);
+			$systemCall = $this->rawCall($bin, $args, true);
 			if ($systemCall->exit_code != 0)
 			{
 				$this->_errors[] = sprintf($this->l('Error when calling %s binary, system exit code: %u, text output: %s'), $bin, $systemCall->exit_code, implode(PHP_EOL, $systemCall->output));
@@ -2179,9 +2291,9 @@ class TggAtos extends PaymentModule
 		}
 		foreach ($this->generatePathfileContent() as $name => $value)
 		{
-			if (strlen($value) > self::PATHFILE_VARLENGTH)
+			if (Tools::strlen($value) > self::PATHFILE_VARLENGTH)
 			{
-				$this->_errors[] = sprintf($this->l('Pathfile %1$s value is %4$u characters long. An undocumented limitation of ATOS SIPS pathfile reader seems to disallow pathfile values to be longer than %3$u characters. F_* values can be shortened by moving param directory upper on the file system and updating corresponding entry in advanced conf.'), $name, $value, self::PATHFILE_VARLENGTH, strlen($value));
+				$this->_errors[] = sprintf($this->l('Pathfile %1$s value is %4$u characters long. An undocumented limitation of ATOS SIPS pathfile reader seems to disallow pathfile values to be longer than %3$u characters. F_* values can be shortened by moving param directory upper on the file system and updating corresponding entry in advanced conf.'), $name, $value, self::PATHFILE_VARLENGTH, Tools::strlen($value));
 			}
 		}
 		if ($this->get(self::CNF_LOG_PATH) == $this->_confVarsByName[self::CNF_LOG_PATH]['default'])
@@ -2238,10 +2350,10 @@ class TggAtos extends PaymentModule
 				)
 			);
 			$context = stream_context_create($opts);
-			$response = @file_get_contents('http://ws.tggatos.capillotracteur.fr/checkVersion', false, $context);
+			$response = Tools::file_get_contents('http://ws.tggatos.capillotracteur.fr/checkVersion', false, $context);
 			if (empty($response))
 				throw new Exception('Check version call failed: no response');
-			$responseObj = json_decode($response);
+			$responseObj = Tools::json_decode($response);
 			if (!is_object($responseObj))
 				throw new Exception('Check version call failed: response cannot be decoded, received: '.$response);
 			if (version_compare($this->version, $responseObj->currentVersion, '<'))
@@ -2267,7 +2379,7 @@ class TggAtos extends PaymentModule
 	 * @param array $args
 	 * @return TggAtosModuleSystemCall
 	 */
-	public function rawCall($bin_name, array $args = array())
+	public function rawCall($bin_name, array $args = array(), $redirect_stderr_to_stdout = false)
 	{
 		if (!empty($args))
 		{
@@ -2276,6 +2388,9 @@ class TggAtos extends PaymentModule
 		else
 		{
 			$args = '';
+		}
+		if ($redirect_stderr_to_stdout) {
+			$args .= ' '.'2>&1';
 		}
 		return new TggAtosModuleSystemCall(escapeshellcmd(( $this->get(self::CNF_BINARIES_IN_PATH) ? '' : $this->get(self::CNF_BIN_PATH) ) . $bin_name . $this->get(self::CNF_BIN_SUFFIX)) . $args);
 	}
@@ -2290,7 +2405,7 @@ class TggAtos extends PaymentModule
 			$current_version = '0';
 		$toUpdate = array();
 		foreach ($this->_newConfVars as $version => $vars)
-			if (version_compare($this->version, $current_version, '>'))
+			if (version_compare($version, $current_version, '>'))
 				$toUpdate = array_merge($toUpdate, $vars);
 		if ($this->setDefaults($toUpdate))
 			$this->set(self::CNF_VERSION, $this->version);
@@ -2400,7 +2515,7 @@ class TggAtos extends PaymentModule
 			$return[$v] = $v;
 		return $return;
 	}
-	
+
 	/**
 	 * Never called method added to force translation keys to exists when parsed by PS module translation key finder
 	 */
@@ -2416,37 +2531,45 @@ class TggAtos extends PaymentModule
 	
 	public function error($line, $message, $severity = 4, $object = NULL, $dieIfDevMode = true, $dieAnyway = false, $file = __FILE__)
 	{
+		$severity = (int)$severity;
 		$error = $file.'('.$line.'): '.$message;
-		$errorlog = $error;
 		$fullError = $error.(is_null($object) ? '' : PHP_EOL.'debug object: '.print_r($object, true));
-		$errorlog = $fullError;
-		if (!is_null($object))
-		{
-			$objectOutput = print_r($object, true);
-			$loggerMessageDefinition = ObjectModel::getDefinition('Logger', 'message');
-			if ($loggerMessageDefinition['validate'] === 'isMessage')
-			{
-				if (!Validate::isMessage($objectOutput))
-				{
-					$errorlog = $error .PHP_EOL.'debug object: '.sprintf(
-							'Can\'t dump debug object `%s` to Prestashop logger, please see `%s` in module\'s log directory.',
-							is_object($object)
-								? get_class($object)
-								: gettype($object),
-							self::FILE_ERROR_LOG
-					);
+		if (class_exists('Logger')) {
+			try {
+				$errorlog = $fullError;
+				if (!is_null($object)) {
+					$objectOutput = print_r($object, true);
+					$loggerMessageDefinition = ObjectModel::getDefinition('Logger', 'message');
+					if ($loggerMessageDefinition['validate'] === 'isMessage') {
+						if (!Validate::isMessage($objectOutput)) {
+							$errorlog = $error . PHP_EOL . 'debug object: ' . sprintf(
+									'Can\'t dump debug object `%s` to Prestashop logger, please see `%s` in module\'s log directory.',
+									is_object($object)
+										? get_class($object)
+										: gettype($object),
+									self::FILE_ERROR_LOG
+								);
+						}
+					}
 				}
-			}
+				Logger::addLog($errorlog, $severity);
+			} catch (Exception $exception) {}
 		}
-		Logger::addLog($errorlog);
-		$logfile = $this->get(self::CNF_LOG_PATH) . self::FILE_ERROR_LOG;
+		$logpath = $this->get(self::CNF_LOG_PATH);
+		// Handle case were logpath is not defined (from install() for exemple)
+		if (empty($logpath)) {
+			$logpath = $this->local_path.'log'.DIRECTORY_SEPARATOR;
+		}
+		$logfile = $logpath . self::FILE_ERROR_LOG;
 		$logFileHandle = fopen($logfile, 'a');
 		if (is_resource($logFileHandle))
 		{
-			fwrite($logFileHandle, '|+> '.date('Y-m-d H:i:s').': ');
+			fwrite($logFileHandle, '|+> '.date('Y-m-d H:i:s').' severity '.$severity);
 			fwrite($logFileHandle, $fullError);
 			fwrite($logFileHandle, PHP_EOL);
 			fclose($logFileHandle);
+		} else {
+			trigger_error('TggAtos, severity '.$severity.', '.$fullError, E_USER_WARNING);
 		}
 		if (_PS_MODE_DEV_)
 		{
@@ -2782,7 +2905,7 @@ class TggAtosModuleResponseOutputParser
 	
 	public function __construct(TggAtosModuleSystemCall $call, $originalMessage, $type, TggAtos $module)
 	{
-		$output = explode('!', substr($call->last_line, 1));
+		$output = explode('!', Tools::substr($call->last_line, 1));
 		$this->success = array_shift($output) == 0;
 		$this->error = array_shift($output);
 		if ($this->success)

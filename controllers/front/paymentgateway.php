@@ -1,5 +1,8 @@
 <?php
-class TggAtosPaymentModuleFrontController extends ModuleFrontController
+if (!class_exists('TggAtosModuleFrontController', false)) {
+	require_once implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__), 'TggAtosModuleFrontController.php'));
+}
+class TggAtosPaymentGatewayModuleFrontController extends TggAtosModuleFrontController
 {
 	public $display_column_left = false;
 	public $ssl = true;
@@ -8,11 +11,11 @@ class TggAtosPaymentModuleFrontController extends ModuleFrontController
 	 *  @var TggAtos 
 	 */
 	public $module;
-	
+
 	public function init()
 	{
 		parent::init();
-		
+
 		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 		header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
 		
@@ -24,12 +27,12 @@ class TggAtosPaymentModuleFrontController extends ModuleFrontController
 	public function initContent()
 	{
 		parent::initContent();
-		
+
 		$mode = Tools::getValue('mode');
 		if (!$this->module->canProcess($mode, $this->context->cart))
 			Tools::redirect('index.php?controller=order&step=3');
 	
-		$this->context->currency = Currency::getCurrencyInstance(intval($this->context->cart->id_currency));
+		$this->context->currency = Currency::getCurrencyInstance((int)$this->context->cart->id_currency);
 		
 		$cartAmount = $this->context->cart->getOrderTotal();
 		$feesAmount = $this->module->getPaymentFees($cartAmount, $this->context->currency, $mode);
@@ -52,6 +55,6 @@ class TggAtosPaymentModuleFrontController extends ModuleFrontController
 			'tggatos_paymentCurrency' => $this->context->currency,
 			'tggatos_pathURI' => $this->module->getPathUri()
 		));
-		$this->setTemplate('payment_redirect_to_bank.tpl');
+		$this->setTemplate('payment_gateway.tpl');
 	}
 }

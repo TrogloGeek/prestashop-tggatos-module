@@ -1,5 +1,7 @@
 {capture name=path}{l s='Card payment' mod='tggatos'}{/capture}
-{include file=$tpl_dir|cat:'breadcrumb.tpl'}
+{if version_compare($smarty.const._PS_VERSION_, '1.5', '>=') && version_compare($smarty.const._PS_VERSION_, '1.6', '<')}
+	{include file=$tpl_dir|cat:'breadcrumb.tpl'}
+{/if}
 
 <h2>{l s='Payment' mod='tggatos'}</h2>
 
@@ -11,7 +13,7 @@
 	{l s='Card payment failure' mod='tggatos'}
 </h3>
 <p>
-	<img src="{$tggatos_pathURI}images/atos.gif" alt="{l s='Card payment' mod='tggatos'}" style="float:left; margin: 0px 10px 5px 0px;" />
+	<img src="{$tggatos_pathURI}views/img/atos.gif" alt="{l s='Card payment' mod='tggatos'}" style="float:left; margin: 0px 10px 5px 0px;" />
 {if $tggatos_response && $tggatos_response->response_code == '17'}
 	{l s='The payment has been cancelled.' mod='tggatos'}<br />
 {elseif $tggatos_response}
@@ -22,7 +24,7 @@
 	{l s='Click the other payment methods button to restart payment process with one of the available methods.' mod='tggatos'}
 </p>
 <p class="cart_navigation">
-	<a href="{$link->getPageLink('order', true, null, 'step=3&cgv=1')}" class="button_large">{l s='Other payment methods' mod='tggatos'}</a>
+	<a href="{$link->getPageLink('order.php', true, null)|cat:'?step=3&cgv=1'}" class="button_large">{l s='Other payment methods' mod='tggatos'}</a>
 </p>
 {if $tggatos_response}
 <br /><br />
@@ -68,6 +70,6 @@
 	</table>
 </div>
 <p class="cart_navigation">
-	<a href="{$link->getPageLink('order', true, null, 'step=3&cgv=1')}" class="button_large">{l s='Other payment methods' mod='tggatos'}</a>
+	<a href="{$link->getPageLink('order.php', true, null)|cat:'?step=3&cgv=1'}" class="button_large">{l s='Other payment methods' mod='tggatos'}</a>
 </p>
 {/if}
