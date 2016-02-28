@@ -22,7 +22,12 @@ class TggAtosSilentResponseModuleFrontController extends TggAtosModuleFrontContr
 			exit;
 		}
 		$response = $this->module->uncypherResponse($message, TggAtosModuleResponseObject::TYPE_SILENT);
-		$this->module->processResponse($response);
+		$id_cart = (int)$response->order_id;
+		$lock = uniqid('', true);
+		if ($this->module->tryCreateResponseLock($id_cart, $lock)) {
+			$this->module->processResponse($response);
+			$this->module->removeResponseLock($id_cart, $lock);
+		}
 		exit;
 	}
 }

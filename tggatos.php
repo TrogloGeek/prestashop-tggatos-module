@@ -66,6 +66,7 @@ class TggAtos extends PaymentModule
 	const MODE_3TPAYMENT = 3;
 
 	const TABLE_TRANSACTION_TODAY = '_transactions_today';
+	const TABLE_RESPONSE_LOCK = '_response_lock';
 	const ATOS_FIELD_TRANSACTION_ID = 'transaction_id';
 	const ATOS_FIELD_AUTHORISATION_ID = 'authorisation_id';
 
@@ -119,6 +120,7 @@ class TggAtos extends PaymentModule
 
 	const CNF_TXT_FONT = 'TXT_FONT';
 	//ADVANCED conf
+	const CNF_CONCURRENCY_MAX_WAIT = 'CONCUR_MAX_WAIT';
 	const CNF_NO_TID_GENERATION = 'NO_TID_GENERATION';
 	const CNF_MIN_TID = 'MIN_TID';
 	const CNF_MAX_TID = 'MAX_TID';
@@ -175,7 +177,8 @@ class TggAtos extends PaymentModule
 	 * @var array
 	 */
 	private $_newConfVars = array(
-		'3.3.0' => array(self::CNF_OS_NONZERO_COMPCODE, self::CNF_DATA_CONTROLS, self::CNF_CUSTOM_DATA)
+		'3.3.0' => array(self::CNF_OS_NONZERO_COMPCODE, self::CNF_DATA_CONTROLS, self::CNF_CUSTOM_DATA),
+		'4.1.0' => array(self::CNF_CONCURRENCY_MAX_WAIT)
 	);
 	
 	private $_banks = array(
@@ -215,7 +218,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '4.0.0';
+		$this->version = '4.1.0';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.4.0.0';
 		$this->ps_versions_compliancy['max'] = '1.6';
@@ -341,7 +344,7 @@ class TggAtos extends PaymentModule
 			// DB table creation
 			if ($result) {
 				$DB = Db::getInstance(TRUE);
-					if (!$DB->execute('
+				if (!$DB->execute('
 						CREATE TABLE IF NOT EXISTS `'.$this->getTable(self::TABLE_TRANSACTION_TODAY).'` (
 							`date`				DATE				NOT NULL,
 							`transaction_id`	MEDIUMINT UNSIGNED	NOT NULL	AUTO_INCREMENT,
@@ -352,6 +355,7 @@ class TggAtos extends PaymentModule
 				', false)) {
 						throw new Exception(sprintf($this->l('Fatal error: Installation of the database table failed, error code: %u, error message: %s'), $DB->getNumberError(), $DB->getMsgError()));
 				}
+				$this->installResponseLockTable();
 			}
 		} catch (Exception $e) {
 			$result = false;
@@ -1056,7 +1060,7 @@ class TggAtos extends PaymentModule
 			return false;
 		return $tid;
 	}
-	
+
 	/**
 	 * @param Db $DB
 	 * @param DateTime $date
@@ -1096,7 +1100,50 @@ class TggAtos extends PaymentModule
 		}
 		return $DB->Insert_ID();
 	}
-	
+
+	public function getResponseLock($id_cart)
+	{
+		$DB = Db::getInstance(true);
+		return $DB->getValue('SELECT `lock` from `'.$this->getTable(self::TABLE_RESPONSE_LOCK).'` WHERE `id_cart` = '.(int)$id_cart, false);
+	}
+
+	public function tryCreateResponseLock($id_cart, $lock)
+	{
+		$DB = Db::getInstance(true);
+		$DB->execute('
+			INSERT IGNORE INTO `'.$this->getTable(self::TABLE_RESPONSE_LOCK).'`
+			SET
+				`id_cart` = '.(int)$id_cart.',
+				`lock` = \''.pSQL($lock).'\'
+			;
+		', false);
+		return $lock == $this->getResponseLock($id_cart);
+	}
+
+	public function removeResponseLock($id_cart, $lock)
+	{
+		$DB = Db::getInstance(true);
+		$DB->execute('
+			DELETE FROM `'.$this->getTable(self::TABLE_RESPONSE_LOCK).'`
+			WHERE
+				`id_cart` = '.(int)$id_cart.',
+				`lock` = \''.pSQL($lock).'\'
+			;
+		', false);
+		return $lock == $this->getResponseLock($id_cart);
+	}
+
+	public function waitForLockRemoval($id_cart)
+	{
+		$max_wait_mts = microtime(true) + (int)$this->get(self::CNF_CONCURRENCY_MAX_WAIT);
+		$success = false;
+		while (($max_wait_mts > microtime(true)) && !$success) {
+			usleep(100000); //0.1 second
+			$success = !$this->getResponseLock($id_cart);
+		}
+		return $success;
+	}
+
 	/**
 	 * Populate internal configuration definition
 	 */
@@ -1589,6 +1636,12 @@ class TggAtos extends PaymentModule
 					'description' => $this->l('Display redirection forms on displayPayment hook (see warnings in hint)'),
 					'hint' => $this->l('WARNING: ATOS SIPS forms contain all payment parameters that will be transmitted to payment server. It means that they have to be refreshed if cart amount is updated. For exemple, using this feature in One Page Checkout mode will require some changes on your theme\'s javascript to refresh payment selection on each cart update. It will also consume a transaction ID on each forms display (all forms generated together use the same transaction ID to avoid wasting a lot of them). You will also want to customize tggatos/views/templates/hook/direct_payment.tpl'),
 					'default' => FALSE
+				),
+				self::CNF_CONCURRENCY_MAX_WAIT => array(
+					'type' => self::T_ABS_POSITIVE_INT,
+					'input' => self::IN_TEXT,
+					'description' => $this->l('How many seconds can we wait for the result of the silent response'),
+					'default' => 3
 				),
 				self::CNF_NO_TID_GENERATION => array(
 					'type' => self::T_BOOL,
@@ -2407,6 +2460,9 @@ class TggAtos extends PaymentModule
 		foreach ($this->_newConfVars as $version => $vars)
 			if (version_compare($version, $current_version, '>'))
 				$toUpdate = array_merge($toUpdate, $vars);
+		if (version_compare('4.1.0', $current_version, '>')) {
+			$this->installResponseLockTable();
+		}
 		if ($this->setDefaults($toUpdate))
 			$this->set(self::CNF_VERSION, $this->version);
 		$this->updateAtosParamFiles();
@@ -2514,6 +2570,26 @@ class TggAtos extends PaymentModule
 		foreach ($array as $v)
 			$return[$v] = $v;
 		return $return;
+	}
+
+	/**
+	 * @param $DB
+	 * @throws Exception
+	 */
+	protected function installResponseLockTable()
+	{
+		$DB = Db::getInstance(true);
+		if (!$DB->execute('
+						CREATE TABLE IF NOT EXISTS `' . $this->getTable(self::TABLE_RESPONSE_LOCK) . '` (
+							`id_cart`	INT UNSIGNED		NOT NULL,
+							`lock`		CHAR(23)			NOT NULL,
+							PRIMARY KEY (`id_cart`)
+						)
+						;
+				', false)
+		) {
+			throw new Exception(sprintf($this->l('Fatal error: Installation of the database table failed, error code: %u, error message: %s'), $DB->getNumberError(), $DB->getMsgError()));
+		}
 	}
 
 	/**

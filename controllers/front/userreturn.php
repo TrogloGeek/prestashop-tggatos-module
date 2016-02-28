@@ -31,31 +31,54 @@ class TggAtosUserReturnModuleFrontController extends TggAtosModuleFrontControlle
 		if (empty($message))
 			Tools::redirectLink($this->context->link->getPageLink('history.php', true));
 		$response = $this->module->uncypherResponse($message, TggAtosModuleResponseObject::TYPE_USER);
-		$order = $this->module->processResponse($response);
-		if ($order)
-		{
-			Tools::redirectLink(
-				$this->context->link->getPageLink(
-					'order-confirmation.php'
-					, true
-				)
-				.'?'.http_build_query(
-					array(
-						'id_cart' => $order->id_cart
+		$id_cart = (int)$response->order_id;
+		$lock = uniqid('', true);
+		$has_lock = $this->module->tryCreateResponseLock($id_cart, $lock);
+		$has_lock = false;
+		$can_proceed = null;
+		if (!$has_lock) {
+			$can_proceed = $this->module->waitForLockRemoval($id_cart);
+		} else {
+			$can_proceed = true;
+		}
+		if ($can_proceed) {
+			$order = $this->module->processResponse($response);
+			if ($has_lock) {
+				$this->module->removeResponseLock($id_cart, $lock);
+			}
+			if ($order) {
+				Tools::redirectLink(
+					$this->context->link->getPageLink(
+						'order-confirmation.php'
+						, true
+					)
+					. '?' . http_build_query(
+						array(
+							'id_cart' => $order->id_cart
 						, 'id_order' => $order->id
 						, 'transaction_id' => $response->transaction_id
 						, 'key' => $order->secure_key
 						, 'id_module' => $this->module->id
 						, 'tggatos_date' => date('Y-m-d')
+						)
 					)
+				);
+				exit;
+			}
+			Tools::redirect(
+				$this->module->getModuleLink(
+					TggAtos::CTRL_PAYMENT_FAILURE
+					, array('id_cart' => $response->order_id, 'transaction_id' => $response->transaction_id, 'tggatos_date' => date('Y-m-d'))
 				)
 			);
+			exit;
+		} else {
+			// response still being processed in another thread
+			// let's explain it to the client
+			$this->context->smarty->assign(array(
+				'tggatos_pathURI' => $this->module->getPathUri()
+			));
+			$this->setTemplate('processing_payment_response.tpl');
 		}
-		Tools::redirect(
-			$this->module->getModuleLink(
-				TggAtos::CTRL_PAYMENT_FAILURE
-				, array('id_cart' => $response->order_id, 'transaction_id' => $response->transaction_id, 'tggatos_date' => date('Y-m-d'))
-			)
-		);
 	}
 }
