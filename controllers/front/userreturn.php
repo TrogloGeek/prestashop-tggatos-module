@@ -34,7 +34,6 @@ class TggAtosUserReturnModuleFrontController extends TggAtosModuleFrontControlle
 		$id_cart = (int)$response->order_id;
 		$lock = uniqid('', true);
 		$has_lock = $this->module->tryCreateResponseLock($id_cart, $lock);
-		$has_lock = false;
 		$can_proceed = null;
 		if (!$has_lock) {
 			$can_proceed = $this->module->waitForLockRemoval($id_cart);

@@ -1126,7 +1126,7 @@ class TggAtos extends PaymentModule
 		$DB->execute('
 			DELETE FROM `'.$this->getTable(self::TABLE_RESPONSE_LOCK).'`
 			WHERE
-				`id_cart` = '.(int)$id_cart.',
+				`id_cart` = '.(int)$id_cart.' AND
 				`lock` = \''.pSQL($lock).'\'
 			;
 		', false);
