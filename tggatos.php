@@ -7,7 +7,7 @@
  * @website http://prestashop.blog.capillotracteur.fr
  */
 
-class TggAtos extends PaymentModule 
+class TggAtos extends PaymentModule
 {
 	const IN_NONE = 0;
 	const IN_TEXT = 1;
@@ -15,7 +15,7 @@ class TggAtos extends PaymentModule
 	const IN_CHECKBOX = 3;
 	const IN_INTERNAL = 4;
 	const IN_TEXTAREA = 5;
-	
+
 	const T_NONE = 0;
 	const T_BOOL = 1;
 	const T_INT = 2;
@@ -26,11 +26,11 @@ class TggAtos extends PaymentModule
 	const T_STRING = 7;
 	const T_PATH = 8;
 	const T_URI = 9;
-	
+
 	const FEES_TOTAL = 0;
 	const FEES_FIXED = 1;
 	const FEES_PERCENT = 2;
-	
+
 	const RETURN_PROTOCOL_AUTO = '';
 	const RETURN_PROTOCOL_HTTP = 'http://';
 	const RETURN_PROTOCOL_HTTPS = 'https://';
@@ -172,7 +172,7 @@ class TggAtos extends PaymentModule
 	 * @var array
 	 */
 	private $_confVarsByName;
-	
+
 	/**
 	 * @var array
 	 */
@@ -180,7 +180,7 @@ class TggAtos extends PaymentModule
 		'3.3.0' => array(self::CNF_OS_NONZERO_COMPCODE, self::CNF_DATA_CONTROLS, self::CNF_CUSTOM_DATA),
 		'4.1.0' => array(self::CNF_CONCURRENCY_MAX_WAIT)
 	);
-	
+
 	private $_banks = array(
 		'' => '',
 		'cyberplus' => 'CyberPlus - Banque Populaire',
@@ -206,19 +206,19 @@ class TggAtos extends PaymentModule
 		'citelis' => '029800266211111',
 		'smc' => '011223344551111'
 	);
-	
+
 	private $_hasTransacIDAvailableCached = null;
-	
+
 	/**
 	 * Module's constructor
 	 */
-	public function __construct() 
+	public function __construct()
 	{
 		$this->name = 'tggatos';
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '4.1.0';
+		$this->version = '4.1.1';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.4.0.0';
 		$this->ps_versions_compliancy['max'] = '1.6';
@@ -239,7 +239,7 @@ class TggAtos extends PaymentModule
 			$this->autoCheck();
 		}
 	}
-	
+
 	/**
 	 * Returns internal configuration value
 	 * @param string $varname name of internal configuration variable to fetch
@@ -253,14 +253,14 @@ class TggAtos extends PaymentModule
 			$value = (bool)$value;
 		return $value;
 	}
-	
+
 	/**
 	 * Sets internal configuration value
 	 * @param string $varname name of internal configuration variable to set
 	 * @param string $value value to set
 	 * @return boolean Update result
 	 */
-	public function set($varname, $value) 
+	public function set($varname, $value)
 	{
 		$this->initConfVars();
 		switch ($this->_confVarsByName[$varname]['type'])
@@ -307,17 +307,17 @@ class TggAtos extends PaymentModule
 		}
 		return Configuration::updateValue(Tools::strtoupper($this->name).'_'.$varname, $value);
 	}
-	
+
 	public function deleteVar($varname)
 	{
 		Configuration::deleteByName(Tools::strtoupper($this->name).'_'.$varname);
 	}
-	
+
 	public function getTable($table, $addPrefix = true)
 	{
 		return ($addPrefix ? _DB_PREFIX_ : '').$this->name.$table;
 	}
-	
+
 	public function install()
 	{
 		$result = true;
@@ -366,7 +366,7 @@ class TggAtos extends PaymentModule
 			$this->setDefaults();
 			$this->updateAtosParamFiles();
 		}
-		else 
+		else
 		{
 			parent::uninstall();
 		}
@@ -377,7 +377,7 @@ class TggAtos extends PaymentModule
 		}
 		return $result;
 	}
-	
+
 	public function uninstall()
 	{
 		Db::getInstance(TRUE)->execute('DROP TABLE IF EXISTS `'.$this->getTable(self::TABLE_TRANSACTION_TODAY).'`', false);
@@ -386,7 +386,7 @@ class TggAtos extends PaymentModule
 			$this->deleteVar($varname);
 		return parent::uninstall();
 	}
-	
+
 	/**
 	 * Check if this payment method can be used, with optionnal additionnal checks against cart
 	 * @param int $mode self::MODE_* or NULL to perform only basic health checks
@@ -399,7 +399,7 @@ class TggAtos extends PaymentModule
 			return false;
 		if (!$this->active)
 			return false;
-		
+
 		switch ($mode)
 		{
 			case self::MODE_SINGLE:
@@ -416,7 +416,7 @@ class TggAtos extends PaymentModule
 			default:
 				throw new PrestaShopModuleException('Invalid Argument $mode');
 		}
-		
+
 		if (!$skipHealthChecks) {
 			if (!$this->get(self::CNF_BANK) || !array_key_exists($this->get(self::CNF_BANK), $this->_banks))
 				return false;
@@ -431,7 +431,7 @@ class TggAtos extends PaymentModule
 					return false;
 			}
 		}
-		
+
 		if (!is_null($mode) && !empty($cart)) {
 			if ($cart->getOrderTotal() < $this->defaultCurrencyConvert($this->getMinAmount($mode), $cart->id_currency, self::CONVERT_FROM_DEFAULT))
 				return false;
@@ -443,7 +443,7 @@ class TggAtos extends PaymentModule
 	{
 		return $this->hookDisplayPayment($params);
 	}
-	
+
 	/**
 	 * Hook displayPayment which displays available payment methods
 	 * @param array $params Hook params
@@ -459,7 +459,7 @@ class TggAtos extends PaymentModule
 			'TggAtos' => $this,
 			'tggatos_cart' => $cart
 		), null, true);
-		
+
 		if ($this->get(self::CNF_SKIP_REDIRECTION_CONTROLLER))
 		{
 			$transaction_id = $this->generateTransactionId();
@@ -570,7 +570,7 @@ class TggAtos extends PaymentModule
 		$this->smarty->assign('tggatos_response', $this->getResponseFromLog(Tools::getValue('tggatos_date'), Tools::getValue('id_cart'), Tools::getValue('transaction_id')));
 		return $this->display(__FILE__, 'views/templates/hook/payment_return.tpl');
 	}
-	
+
 	/**
 	 * Generate payment redirection form by calling request binary of ATOS SIPS API
 	 * @param float $amount
@@ -585,7 +585,7 @@ class TggAtos extends PaymentModule
 		$atosAmount = $amount;
 		if ($currency->decimals)
 			$atosAmount *= 100;
-		
+
 		$data = array();
 		$params = array(
 			'language' => $this->get(self::CNF_ISO_LANG) ? $this->get(self::CNF_ISO_LANG) : $this->context->language->iso_code,
@@ -764,7 +764,7 @@ class TggAtos extends PaymentModule
 		}
 		return $result->form;
 	}
-	
+
 	/**
 	 * Uncypher bank response using ATOS SIPS response binary
 	 * @param string $message
@@ -911,7 +911,7 @@ class TggAtos extends PaymentModule
 			return $order;
 		}
 	}
-	
+
 	/**
 	 * @var Currency
 	 */
@@ -922,7 +922,7 @@ class TggAtos extends PaymentModule
 			$this->_defaultCurrency = Currency::getDefaultCurrency();
 		return $this->_defaultCurrency;
 	}
-	
+
 	/**
 	 * @param float $amount
 	 * @param Currency|int $currency
@@ -951,7 +951,7 @@ class TggAtos extends PaymentModule
 			}
 		return $amount;
 	}
-		
+
 	/**
 	 * @param int $mode self::MODE_*
 	 * @throws PrestaShopModuleException
@@ -971,7 +971,7 @@ class TggAtos extends PaymentModule
 				throw new PrestaShopModuleException('Invalid Argument $mode (must be self::MODE_*)');
 		}
 	}
-	
+
 	public function getPaymentFees($amount, Currency $currency, $mode)
 	{
 		$fixed = null;
@@ -995,7 +995,7 @@ class TggAtos extends PaymentModule
 		}
 		return Tools::ps_round($this->defaultCurrencyConvert($fixed, $currency, self::CONVERT_FROM_DEFAULT) + $percent / 100 * $amount, $currency->decimals ? 2 : 0);
 	}
-	
+
 	public function getBankReturnUri($context)
 	{
 		switch ($context)
@@ -1023,7 +1023,7 @@ class TggAtos extends PaymentModule
 		}
 		return $protocol.$domain.$controller;
 	}
-	
+
 	public function getDebugMode()
 	{
 		return $this->get(self::CNF_DEBUG_MODE)
@@ -1033,7 +1033,7 @@ class TggAtos extends PaymentModule
 				)
 		;
 	}
-	
+
 	/**
 	 * @return boolean|string
 	 */
@@ -1787,7 +1787,7 @@ class TggAtos extends PaymentModule
 		foreach ($this->_confVars as $section)
 			$this->_confVarsByName += $section;
 	}
-	
+
 	/**
 	 * Back office module's configuration page handler
 	 * @return string Html configuration GUI
@@ -1921,7 +1921,7 @@ class TggAtos extends PaymentModule
 				<form action="'.Tools::htmlentitiesUTF8($_SERVER['REQUEST_URI']).'" method="post" id="tggatostab'.$sectionName.'">
 					<fieldset>
 						<legend>'.Tools::htmlentitiesUTF8($this->l($sectionName)).'</legend>
-						<input type="hidden" name="tggatos_opennedPannel" value="'.($panel++).'" />	
+						<input type="hidden" name="tggatos_opennedPannel" value="'.($panel++).'" />
 						<table border="0" cellpadding="0" cellspacing="0" id="form" style="width: 100%;" class="tggatos">
 			';
 			foreach ($sectionVars as $name => $declaration)
@@ -1938,7 +1938,7 @@ class TggAtos extends PaymentModule
 							</tr>
 					';
 				}
-				else 
+				else
 				{
 					$html .= '
 							<tr>
@@ -2045,7 +2045,7 @@ class TggAtos extends PaymentModule
 		';
 		return $html;
 	}
-	
+
 	public function generatePathfileContent()
 	{
 		return array(
@@ -2056,7 +2056,7 @@ class TggAtos extends PaymentModule
 			'F_DEFAULT' => $this->get(self::CNF_PARAM_PATH) . self::PARMCOM . '.' . $this->get(self::CNF_BANK)
 		);
 	}
-	
+
 	public function updateAtosParamFiles()
 	{
 		if (!$this->get(self::CNF_BANK))
@@ -2088,7 +2088,7 @@ class TggAtos extends PaymentModule
 			$this->_errors[] = $e->getMessage();
 		}
 	}
-	
+
 	public function logResponse(TggAtosModuleResponseObject $response)
 	{
 		if ($this->get(self::CNF_RESPONSE_LOG_TXT))
@@ -2133,7 +2133,7 @@ class TggAtos extends PaymentModule
 			}
 		}
 	}
-	
+
 	/**
 	 * @param string $date Y-m-d
 	 * @param int $id_cart
@@ -2169,7 +2169,7 @@ class TggAtos extends PaymentModule
 					}
 				}
 			}
-				
+
 		} catch (Exception $e) {
 			$this->error(__LINE__, 'Error while retrieving response from logs '.$file.': '.$e->getMessage(), 1, null, false, false, __FILE__);
 		}
@@ -2180,7 +2180,7 @@ class TggAtos extends PaymentModule
 		}
 		return $response;
 	}
-	
+
 	/**
 	 * Resolve dynamic value from an object implementing TggAtosModuleDynamicValue
 	 * Resolution is done internally rather than in descriptor class to allow access to protected or private property/function
@@ -2197,7 +2197,7 @@ class TggAtos extends PaymentModule
 		}
 		throw new PrestaShopModuleException('Unimplemented dynamic value descriptor '.(get_class($dynamicDescriptor)));
 	}
-	
+
 	/**
 	 * Get list of production certificates installed
 	 * @param $prependEmptyLine Prepend an empty line to select
@@ -2213,10 +2213,10 @@ class TggAtos extends PaymentModule
 		chdir($path);
 		$files = glob($prefix.str_repeat('?', 15));
 		$codes = array();
-		foreach ($files as $file) 
+		foreach ($files as $file)
 		{
 			$code = Tools::substr($file, $prefix_length);
-			if (preg_match('/^[0-9]{15}$/', $code)) 
+			if (preg_match('/^[0-9]{15}$/', $code))
 			{
 				if (in_array($code, $this->_demoCertificates)) continue;
 				$info = '';
@@ -2236,9 +2236,9 @@ class TggAtos extends PaymentModule
 					if (empty($info))
 						throw new Exception('None found');
 				}
-				catch (Exception $e) 
-				{ 
-					$info = $this->l('Error reading certificate information: '.$e->__toString()); 
+				catch (Exception $e)
+				{
+					$info = $this->l('Error reading certificate information: '.$e->__toString());
 				}
 				$codes[$code] = $code.' ('.$info.')';
 			}
@@ -2248,12 +2248,12 @@ class TggAtos extends PaymentModule
 			return array(is_bool($prependEmptyLine) ? '' : $prependEmptyLine) + $codes;
 		return $codes;
 	}
-	
+
 	/**
 	 * Several checks about module's health
 	 * @return array Errors count
 	 */
-	public function autoCheck() 
+	public function autoCheck()
 	{
 		if (!Module::isInstalled($this->name)) return;
 		$this->initConfVars();
@@ -2267,7 +2267,7 @@ class TggAtos extends PaymentModule
 		{
 			$this->_errors[] = sprintf('Your PHP version is %s, this module has been written for PHP 5.3 or higher.', PHP_VERSION);
 		}
-		if (file_exists($errorLogFile)) 
+		if (file_exists($errorLogFile))
 		{
 			$this->_errors[] = sprintf(
 				$this->l('An error log file exists, please read file `%s` and archive it to stop seeing this warning.'),
@@ -2299,9 +2299,9 @@ class TggAtos extends PaymentModule
 			$errorsIndex['ADVANCED']++;
 			$this->_errors[] = $this->l('Debug mode is active.');
 		}
-		if ($this->get('CHECK_VERSION')) 
+		if ($this->get('CHECK_VERSION'))
 		{
-			if (is_object($response = $this->checkNewVersion())) 
+			if (is_object($response = $this->checkNewVersion()))
 			{
 				$this->_errors[] = sprintf($this->l('New version %s available at %s'), $response->currentVersion, $response->url);
 				if (!empty($response->errorMessageIfLower))
@@ -2376,12 +2376,12 @@ class TggAtos extends PaymentModule
 		}
 		return $errorsIndex;
 	}
-	
+
 	/**
 	 * Check web repository to know if a new version is available
 	 * @return boolean|array
 	 */
-	public function checkNewVersion() 
+	public function checkNewVersion()
 	{
 		try {
 			$data = array(
@@ -2393,11 +2393,11 @@ class TggAtos extends PaymentModule
 			$dataencoded = array();
 			foreach ($data as $name => $value)
 				$dataencoded[] = urlencode($name).'='.urlencode($value);
-			$dataencoded = implode('&', $dataencoded); 
+			$dataencoded = implode('&', $dataencoded);
 			$opts = array(
 				'http' => array(
 					'method' => 'POST',
-					'header' => 'Connection: close', 
+					'header' => 'Connection: close',
 					'timeout' => 3,
 					'content' => $dataencoded
 				)
@@ -2412,11 +2412,11 @@ class TggAtos extends PaymentModule
 			if (version_compare($this->version, $responseObj->currentVersion, '<'))
 				return $responseObj;
 		} catch (Exception $e) {
-			$this->_errors[] = sprintf('Check version error: %s', $e->getMessage()); 
+			$this->_errors[] = sprintf('Check version error: %s', $e->getMessage());
 		}
 		return false;
 	}
-	
+
 	public function paramsToArgs(array $params)
 	{
 		$args = array();
@@ -2425,7 +2425,7 @@ class TggAtos extends PaymentModule
 				$args[] = $name.'='.$value;
 		return $args;
 	}
-	
+
 	/**
 	 * Execute a binary file from ATOS API
 	 * @param unknown $bin_name
@@ -2447,11 +2447,11 @@ class TggAtos extends PaymentModule
 		}
 		return new TggAtosModuleSystemCall(escapeshellcmd(( $this->get(self::CNF_BINARIES_IN_PATH) ? '' : $this->get(self::CNF_BIN_PATH) ) . $bin_name . $this->get(self::CNF_BIN_SUFFIX)) . $args);
 	}
-	
+
 	/**
 	 * Update configuration if files has been updated
 	 */
-	public function postUpdate() 
+	public function postUpdate()
 	{
 		$current_version = $this->get(self::CNF_VERSION);
 		if (!$current_version)
@@ -2467,13 +2467,13 @@ class TggAtos extends PaymentModule
 			$this->set(self::CNF_VERSION, $this->version);
 		$this->updateAtosParamFiles();
 	}
-	
+
 	/**
 	 * Set internal configuration default values, optionnaly filterer by an array of variables to set to their default values
 	 * @param array $toUpdate Array of configuration variables to set to default value, null for a global configuration init
 	 * @return boolean Global configuration update result (FALSE if any failed)
 	 */
-	public function setDefaults($toUpdate = null) 
+	public function setDefaults($toUpdate = null)
 	{
 		$defaults = array();
 		$this->initConfVars();
@@ -2490,7 +2490,7 @@ class TggAtos extends PaymentModule
 		foreach ($defaults as $k => $v) $retval = $this->set($k, $v) && $retval;
 		return $retval;
 	}
-	
+
 	private $_orderStatesArrayCache;
 	/**
 	 * Get an associative array of available order states formated for select input
@@ -2511,13 +2511,13 @@ class TggAtos extends PaymentModule
 			return array(is_bool($prependEmptyLine) ? '' : $prependEmptyLine) + $this->_orderStatesArrayCache;
 		return $this->_orderStatesArrayCache;
 	}
-	
+
 	private $_currenciesCache;
 	/**
 	 * Returns an array of enabled currencies (allowed and declared in static atos array $this->_currencies)
 	 * @return array Currency db rows enabled fo this module
 	 */
-	public function getCurrencies() 
+	public function getCurrencies()
 	{
 		if (empty($this->_currenciesCache))
 		{
@@ -2525,13 +2525,13 @@ class TggAtos extends PaymentModule
 		}
 		return $this->_currenciesCache;
 	}
-	
+
 	private $_currenciesArraySelectCache;
 	/**
 	 * Get an associative array of available currencies formated for select input
 	 * @return array [iso_code] => name
 	 */
-	public function getCurrenciesArraySelect() 
+	public function getCurrenciesArraySelect()
 	{
 		if (empty($this->_currenciesArraySelectCache))
 		{
@@ -2541,14 +2541,14 @@ class TggAtos extends PaymentModule
 		}
 		return $this->_currenciesArraySelectCache;
 	}
-	
+
 	public function getTimeZonesArraySelect()
 	{
 		$array = DateTimeZone::listIdentifiers();
 		array_unshift($array, '');
 		return $this->_mirrorArray($array);
 	}
-	
+
 	public function getUserGroupArraySelect()
 	{
 		$groups = Group::getGroups($this->context->language->id);
@@ -2559,10 +2559,10 @@ class TggAtos extends PaymentModule
 		}
 		return $groups_select;
 	}
-	
+
 	/**
 	 * @param array $array
-	 * @return array return input array where indexes are replaced with values 
+	 * @return array return input array where indexes are replaced with values
 	 */
 	private function _mirrorArray(array $array)
 	{
@@ -2604,7 +2604,7 @@ class TggAtos extends PaymentModule
 		$this->l('GRAPHIC');
 		$this->l('ADVANCED');
 	}
-	
+
 	public function error($line, $message, $severity = 4, $object = NULL, $dieIfDevMode = true, $dieAnyway = false, $file = __FILE__)
 	{
 		$severity = (int)$severity;
@@ -2660,7 +2660,7 @@ class TggAtos extends PaymentModule
 	}
 }
 
-interface TggAtosModuleDynamicValue 
+interface TggAtosModuleDynamicValue
 {
 	/**
 	 * Generic value resolver
@@ -2670,14 +2670,14 @@ interface TggAtosModuleDynamicValue
 	public function getValue(TggAtos $module);
 }
 
-abstract class TggAtosModuleInternalDynamicValueAbstract implements TggAtosModuleDynamicValue 
+abstract class TggAtosModuleInternalDynamicValueAbstract implements TggAtosModuleDynamicValue
 {
 	/* (non-PHPdoc)
 	 * @see TggAtosModuleDynamicValue::getValue()
-	 * 
+	 *
 	 * Resolution is delegated to module instance to allow the acces to protected/private property/function
 	 */
-	public function getValue(TggAtos $module) 
+	public function getValue(TggAtos $module)
 	{
 		return $module->getDynamicValue($this);
 	}
@@ -2692,7 +2692,7 @@ class TggAtosModuleProperty extends TggAtosModuleInternalDynamicValueAbstract {
 	 * @var string
 	 */
 	private $_name;
-	
+
 	/**
 	 * Static constructor wrapper to avoid doublons
 	 * @param string $name Property name
@@ -2703,20 +2703,20 @@ class TggAtosModuleProperty extends TggAtosModuleInternalDynamicValueAbstract {
 			self::$_instances[$name] = new self($name);
 		return self::$_instances[$name];
 	}
-	
+
 	/**
 	 * @param string $name Property name
 	 */
 	public function __construct($name) {
 		$this->_name = $name;
 	}
-	
+
 	public function getPropertyName() {
 		return $this->_name;
-	}	
+	}
 }
 
-class TggAtosModuleFunctionCall extends TggAtosModuleInternalDynamicValueAbstract 
+class TggAtosModuleFunctionCall extends TggAtosModuleInternalDynamicValueAbstract
 {
 	/**
 	 * @var array
@@ -2730,7 +2730,7 @@ class TggAtosModuleFunctionCall extends TggAtosModuleInternalDynamicValueAbstrac
 	 * @var array
 	 */
 	private $_parameters;
-	
+
 	/**
 	 * Static constructor wrapper to avoid doublons
 	 * @param string $name Property name
@@ -2747,17 +2747,17 @@ class TggAtosModuleFunctionCall extends TggAtosModuleInternalDynamicValueAbstrac
 	 * @param string $funcName Function name
 	 * @param array $parameters Optionnal array of parameters
 	 */
-	public function __construct($funcName, array $parameters = array()) 
+	public function __construct($funcName, array $parameters = array())
 	{
 		$this->_funcName = $funcName;
 		$this->_parameters = $parameters;
 	}
-	
-	public function getFunctionName() 
+
+	public function getFunctionName()
 	{
 		return $this->_funcName;
 	}
-	
+
 	public function getParameters()
 	{
 		return $this->_parameters;
@@ -2770,7 +2770,7 @@ class TggAtosModuleSystemCall
 	public $output;
 	public $exit_code;
 	public $last_line;
-	
+
 	public function __construct($command)
 	{
 		$this->command = $command;
@@ -2787,7 +2787,7 @@ class TggAtosModuleRequestOutputParser
 	public $success;
 	public $error;
 	public $form;
-	
+
 	public function __construct(TggAtosModuleSystemCall $call)
 	{
 		$output = explode('!', trim($call->last_line, '!'));
@@ -2802,10 +2802,10 @@ class TggAtosModuleResponseObject
 {
 	const CONSTRUCT_NEW = 1;
 	const CONSTRUCT_HYDRATE = 2;
-	
+
 	const TYPE_USER = 'user';
 	const TYPE_SILENT = 'silent';
-	
+
 	public $merchant_id;
 	public $merchant_country;
 	public $amount;
@@ -2836,14 +2836,14 @@ class TggAtosModuleResponseObject
 	public $capture_day;
 	public $capture_mode;
 	public $data;
-	
+
 	public $original_message;
 	public $caller_ip_address;
 	public $response_type;
-	
+
 	public $dataFlags = array();
 	public $dataVars = array();
-	
+
 	public static $fields = array(
 		'merchant_id',
 		'merchant_country',
@@ -2876,7 +2876,7 @@ class TggAtosModuleResponseObject
 		'capture_mode',
 		'data'
 	);
-	
+
 	public static $shortResponseUnavailableFields = array(
 		'caddie',
 		'customer_email',
@@ -2888,13 +2888,13 @@ class TggAtosModuleResponseObject
 		'return_context',
 		'transaction_condition'
 	);
-	
+
 	public static $additionnalLoggableFields = array(
 		'original_message',
 		'caller_ip_address',
 		'response_type'
 	);
-	
+
 	public function __construct(array $responseFields, $originalMessage, $type, $mode = self::CONSTRUCT_NEW, TggAtos $module)
 	{
 		switch ($mode)
@@ -2935,26 +2935,26 @@ class TggAtosModuleResponseObject
 				break;
 			default:
 				throw new PrestaShopModuleException('Illegal argument $mode, must be one of self::CONSTRUCT_*');
-		}			
+		}
 	}
-	
+
 	public function hasDataFlag($flagname)
 	{
 		return !empty($this->dataFlags[$flagname]);
 	}
-	
+
 	public function hasDataVar($varname)
 	{
 		return isset($this->dataVars[$varname]);
 	}
-	
+
 	public function getDataVar($varname)
 	{
 		if (!$this->hasDataVar($varname))
 			return null;
 		return $this->dataVars[$varname];
 	}
-	
+
 	/**
 	 * @param array $data $name => $value hashmap
 	 * @return TggAtosModuleResponseObject
@@ -2978,7 +2978,7 @@ class TggAtosModuleResponseOutputParser
 	 * @var TggAtosModuleResponseObject
 	 */
 	public $response;
-	
+
 	public function __construct(TggAtosModuleSystemCall $call, $originalMessage, $type, TggAtos $module)
 	{
 		$output = explode('!', Tools::substr($call->last_line, 1));
