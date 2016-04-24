@@ -11,14 +11,14 @@ class TggAtosUserReturnModuleFrontController extends TggAtosModuleFrontControlle
 	 *  @var TggAtos
 	 */
 	public $module;
-	
+
 	public function init()
 	{
 		parent::init();
-	
+
 		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 		header("Last-Modified: ".gmdate("D, d M Y H:i:s")." GMT");
-	
+
 		header("Cache-Control: no-store, no-cache, must-revalidate");
 		header("Cache-Control: post-check=0, pre-check=0", false);
 		header("Pragma: no-cache");
@@ -32,6 +32,8 @@ class TggAtosUserReturnModuleFrontController extends TggAtosModuleFrontControlle
 			Tools::redirectLink($this->context->link->getPageLink('history.php', true));
 		$response = $this->module->uncypherResponse($message, TggAtosModuleResponseObject::TYPE_USER);
 		$id_cart = (int)$response->order_id;
+		// lock implementation to avoid race condition between silent and user response
+		// see: https://github.com/TrogloGeek/prestashop-tggatos-module/issues/46
 		$lock = uniqid('', true);
 		$has_lock = $this->module->tryCreateResponseLock($id_cart, $lock);
 		$can_proceed = null;
@@ -41,6 +43,13 @@ class TggAtosUserReturnModuleFrontController extends TggAtosModuleFrontControlle
 			$can_proceed = true;
 		}
 		if ($can_proceed) {
+			//Purging Cart::orderExists() cache.
+			// We do it even in case we obtained the lock to avoid race conditions where the cache has been
+			// populated during silent_response execution but lock was removed by it before we try to gain it.
+			// see: https://github.com/TrogloGeek/prestashop-tggatos-module/issues/46
+			if (class_exists('Cache', false) && method_exists('Cache', 'clean')) {
+				Cache::clean('Cart::orderExists_'.(string)$id_cart);
+			}
 			$order = $this->module->processResponse($response);
 			if ($has_lock) {
 				$this->module->removeResponseLock($id_cart, $lock);
