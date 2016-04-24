@@ -790,12 +790,12 @@ class TggAtos extends PaymentModule
 		}
 		return $result->response;
 	}
-	
+
 	/**
 	 * @param TggAtosModuleResponseObject $response
 	 * @return Order
 	 */
-	
+
 	public function processResponse(TggAtosModuleResponseObject $response)
 	{
 		if (is_null($response))
@@ -883,7 +883,7 @@ class TggAtos extends PaymentModule
 			$this->validateOrder(
 				$this->context->cart->id,
 				$orderState,
-				$amount - $this->getPaymentFees($amount, $this->context->currency, $mode),
+				$amount - $this->getPaymentFees($this->context->cart->getOrderTotal(), $this->context->currency, $mode),
 				$this->displayName,
 				implode(PHP_EOL, $orderLog),
 				$extraVars,

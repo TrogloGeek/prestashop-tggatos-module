@@ -23,7 +23,7 @@
     {l s='You will be redirected to a secure bank server where your card informations will be asked.' mod='tggatos'}<br />
 	{l s='At any moment you can hit the cancel button in order to come back to our payment methods choice from bank server' mod='tggatos'}<br />
 	{l s='Total amount to be paid:' mod='tggatos'}
-	<span id="amount" class="price">{displayPrice price=$tggatos_cartAmount currency=$tggatos_paymentCurrency->id}</span>
+	<span id="amount" class="price">{displayPrice price=$tggatos_totalAmount currency=$tggatos_paymentCurrency->id}</span>
 	{if $tggatos_feesAmount}
 		<br />
 		<span class="payment_fees">{l s='Including payment fees:' mod='tggatos'} {displayPrice price=$tggatos_feesAmount currency=$tggatos_paymentCurrency->id}</span>
