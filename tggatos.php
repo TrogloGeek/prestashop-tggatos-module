@@ -162,6 +162,9 @@ class TggAtos extends PaymentModule
 	const CNF_3TPAYMENT_FEES_P = '3TPAYMENT_FEES_P';
 	const CNF_3TPAYMENT_FP_FXD = '3TPAYMENT_FP_FXD';
 
+	//3DS conf
+	const CNF_3DS_BYPASS_UNDER_AMOUNT = '3DS_BYPASS_UNDER';
+
 	const CNF_3TPAYMENT_FP_PCT = '3TPAYMENT_FP_PCT';
 	const FILE_ERROR_LOG = 'error.log';
 
@@ -180,7 +183,7 @@ class TggAtos extends PaymentModule
 	private $_newConfVars = array(
 		'3.3.0' => array(self::CNF_OS_NONZERO_COMPCODE, self::CNF_DATA_CONTROLS, self::CNF_CUSTOM_DATA),
 		'4.1.0' => array(self::CNF_CONCURRENCY_MAX_WAIT),
-		'4.1.2' => array(self::CNF_ONECLICK_ENABLE)
+		'4.1.2' => array(self::CNF_ONECLICK_ENABLE, self::CNF_3DS_BYPASS_UNDER_AMOUNT)
 	);
 
 	private $_banks = array(
@@ -650,6 +653,18 @@ class TggAtos extends PaymentModule
 		if ($this->get(self::CNF_ONECLICK_ENABLE)) {
 			array_push($data, 'WALLET_ID=CUSTOMER_ID');
 		}
+		$bBypass3DS = false;
+		$iNo3DSMaxCartAmount = $this->get(self::CNF_3DS_BYPASS_UNDER_AMOUNT);
+		if ($iNo3DSMaxCartAmount > 0) {
+			if ($this->defaultCurrencyConvert($amount, $currency, self::CONVERT_TO_DEFAULT) < $iNo3DSMaxCartAmount) {
+				$bBypass3DS = true;
+			}
+		}
+		unset($iNo3DSMaxCartAmount);
+		if ($bBypass3DS) {
+			array_push($data, '3D_BYPASS');
+		}
+		unset($bBypass3DS);
 		$controls = str_replace("\n", '', str_replace("\r", '', $this->get(self::CNF_DATA_CONTROLS)));
 		if (!empty($controls))
 		{
@@ -1796,6 +1811,15 @@ class TggAtos extends PaymentModule
 					'default' => ''
 				)
 			),
+			'3DS' => array(
+				self::CNF_3DS_BYPASS_UNDER_AMOUNT => array(
+					'type' => self::T_INT,
+					'input' => self::IN_TEXT,
+					'description' => $this->l('Bypass 3DS check if cart amount is lower than this amount (expressed in default currency).'),
+					'atos' => 'data=...,3D_BYPASS',
+					'default' => 0
+				)
+			)
 		);
 		$this->_confVarsByName = array();
 		foreach ($this->_confVars as $section)
