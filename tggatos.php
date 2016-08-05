@@ -164,6 +164,7 @@ class TggAtos extends PaymentModule
 
 	//3DS conf
 	const CNF_3DS_BYPASS_UNDER_AMOUNT = '3DS_BYPASS_UNDER';
+	const CNF_3DS_BYPASS_IF_VALIDATED_ORDER_OVER_AGE = '3DS_BYPASS_VORDERAGE';
 
 	const CNF_3TPAYMENT_FP_PCT = '3TPAYMENT_FP_PCT';
 	const FILE_ERROR_LOG = 'error.log';
@@ -183,7 +184,7 @@ class TggAtos extends PaymentModule
 	private $_newConfVars = array(
 		'3.3.0' => array(self::CNF_OS_NONZERO_COMPCODE, self::CNF_DATA_CONTROLS, self::CNF_CUSTOM_DATA),
 		'4.1.0' => array(self::CNF_CONCURRENCY_MAX_WAIT),
-		'4.1.2' => array(self::CNF_ONECLICK_ENABLE, self::CNF_3DS_BYPASS_UNDER_AMOUNT)
+		'4.1.2' => array(self::CNF_ONECLICK_ENABLE, self::CNF_3DS_BYPASS_UNDER_AMOUNT, self::CNF_3DS_BYPASS_IF_VALIDATED_ORDER_OVER_AGE)
 	);
 
 	private $_banks = array(
@@ -661,6 +662,28 @@ class TggAtos extends PaymentModule
 			}
 		}
 		unset($iNo3DSMaxCartAmount);
+		$iNo3DSWhenValidatedOrderExistsThatOld = $this->get(self::CNF_3DS_BYPASS_IF_VALIDATED_ORDER_OVER_AGE);
+		if (!$bBypass3DS && ($iNo3DSWhenValidatedOrderExistsThatOld > 0) && ($this->context->customer instanceof Customer)) {
+			$dbConn = Db::getInstance(_PS_USE_SQL_SLAVE_);
+			$iValidOrdersCount = $dbConn->getValue(
+				'
+					SELECT count(`o`.`id_order`)
+					FROM `'._DB_PREFIX_.'orders` `o`
+					WHERE
+						`o`.`id_customer` = '.(int)$this->context->customer->id.'
+						AND
+						`o`.`valid`
+						AND
+						`o`.`date_add` < \''.pSQL(date('Y-m-d H:i:s', strtotime('- '.$iNo3DSWhenValidatedOrderExistsThatOld.' days'))).'\'
+				',
+				false
+			);
+			if ($iValidOrdersCount > 0) {
+				$bBypass3DS = true;
+			}
+			unset($iValidOrdersCount);
+		}
+		unset($iNo3DSWhenValidatedOrderExistsThatOld);
 		if ($bBypass3DS) {
 			array_push($data, '3D_BYPASS');
 		}
@@ -1818,8 +1841,16 @@ class TggAtos extends PaymentModule
 					'description' => $this->l('Bypass 3DS check if cart amount is lower than this amount (expressed in default currency).'),
 					'atos' => 'data=...,3D_BYPASS',
 					'default' => 0
+				),
+				self::CNF_3DS_BYPASS_IF_VALIDATED_ORDER_OVER_AGE => array(
+					'type' => self::T_INT,
+					'input' => self::IN_TEXT,
+					'description' => $this->l('Bypass 3DS check if customer has a validated order having at least this age (in days).'),
+					'hint' => $this->l('Enter zero if you do not wish to bypass 3DS check based on existence of such order.'),
+					'atos' => 'data=...,3D_BYPASS',
+					'default' => 0
 				)
-			)
+			),
 		);
 		$this->_confVarsByName = array();
 		foreach ($this->_confVars as $section)
