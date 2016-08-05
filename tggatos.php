@@ -139,8 +139,8 @@ class TggAtos extends PaymentModule
 	const CNF_DEBUG_GID = 'DEBUG_GID';
 	const CNF_TID_TZ = 'TID_TZ';
 	const CNF_DATA_CONTROLS = 'DATA_CONTROLS';
-
 	const CNF_CUSTOM_DATA = 'CUSTOM_DATA';
+
 	//23TIMES conf
 	const CNF_2TPAYMENT = '2TPAYMENT';
 	const CNF_2TPAYMENT_MEANS = '2TPAYMENT_MEANS';
