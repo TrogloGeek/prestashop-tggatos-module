@@ -91,6 +91,7 @@ class TggAtos extends PaymentModule
 	const CNF_CHECK_VERSION = 'CHECK_VERSION';
 	const CNF_OS_PAYMENT_CANCELLED = 'OS_PAYMENT_CANCELLED';
 	const CNF_OS_PAYMENT_FAILED = 'OS_PAYMENT_FAILED';
+	const CNF_ONECLICK_ENABLE = 'ONECLICK_ENABLE';
 
 	const CNF_OS_NONZERO_COMPCODE = 'OS_NONZERO_COMPCODE';
 	//SINGLE conf
@@ -178,7 +179,8 @@ class TggAtos extends PaymentModule
 	 */
 	private $_newConfVars = array(
 		'3.3.0' => array(self::CNF_OS_NONZERO_COMPCODE, self::CNF_DATA_CONTROLS, self::CNF_CUSTOM_DATA),
-		'4.1.0' => array(self::CNF_CONCURRENCY_MAX_WAIT)
+		'4.1.0' => array(self::CNF_CONCURRENCY_MAX_WAIT),
+		'4.1.2' => array(self::CNF_ONECLICK_ENABLE)
 	);
 
 	private $_banks = array(
@@ -642,8 +644,12 @@ class TggAtos extends PaymentModule
 				array_push($data, 'NB_PAYMENT=3', 'PERIOD='.$this->get(self::CNF_3TPAYMENT_SPACING), 'INITIAL_AMOUNT='.$initialAmount);
 				break;
 		}
-		if ($this->get(self::CNF_FORCE_RETURN))
+		if ($this->get(self::CNF_FORCE_RETURN)) {
 			array_push($data, 'NO_RESPONSE_PAGE');
+		}
+		if ($this->get(self::CNF_ONECLICK_ENABLE)) {
+			array_push($data, 'WALLET_ID=CUSTOMER_ID');
+		}
 		$controls = str_replace("\n", '', str_replace("\r", '', $this->get(self::CNF_DATA_CONTROLS)));
 		if (!empty($controls))
 		{
@@ -1253,6 +1259,14 @@ class TggAtos extends PaymentModule
 					'values' => TggAtosModuleFunctionCall::factory('getOrderStatesSelectArray'),
 					'default' => Configuration::get('PS_OS_PAYMENT')
 				),
+				self::CNF_ONECLICK_ENABLE => array(
+					'type' => self::T_BOOL,
+					'input' => self::IN_CHECKBOX,
+					'description' => $this->l('Enable OneClick payment feature.'),
+					'hint' => $this->l('Requires your SIPS contract to include this feature.'),
+					'atos'  => 'data=...,WALLET_ID=CUSTOMER_ID',
+					'default' => FALSE
+				)
 			),
 			'SINGLE' => array(
 				self::CNF_SINGLE => array(
