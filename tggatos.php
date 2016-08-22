@@ -2328,7 +2328,7 @@ class TggAtos extends PaymentModule
 		$this->initConfVars();
 		$this->warning = array();
 		$this->_errors = array();
-		$errorsIndex = array('BASIC' => 0, 'SINGLE' => 0, '2TIMES' => 0, '3TIMES' => 0, 'GRAPHIC' => 0, 'ADVANCED' => 0);
+		$errorsIndex = array('BASIC' => 0, 'SINGLE' => 0, '2TIMES' => 0, '3TIMES' => 0, 'GRAPHIC' => 0, 'ADVANCED' => 0, '3DS' => 0);
 		if (version_compare($this->version, $this->get(self::CNF_VERSION), '>'))
 			$this->postUpdate();
 		$errorLogFile = $this->get(self::CNF_LOG_PATH) . self::FILE_ERROR_LOG;
