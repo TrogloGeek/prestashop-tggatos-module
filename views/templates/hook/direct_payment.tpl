@@ -2,7 +2,7 @@
 
 {if $tggatos_singleForm}
 	<p class="payment_module tggatos-direct tggatos-single">
-		<img src="{$module_template_dir|escape:'html'}images/bank_logo/{$TggAtos->get('BANK')}.gif" alt="{l s='Pay by credit card' mod='tggatos'}" width="86" height="49"/>
+		<img src="{$module_template_dir|escape:'html'}views/img/bank_logo/{$TggAtos->get('BANK')}.gif" alt="{l s='Pay by credit card' mod='tggatos'}" width="86" height="49"/>
 		<span>
 		{l s='Pay by credit card' mod='tggatos'}
 		</span>
@@ -18,7 +18,7 @@
 
 {if $tggatos_2tForm}
 	<p class="payment_module tggatos-direct tggatos-2t">
-		<img src="{$module_template_dir|escape:'html'}images/bank_logo/{$TggAtos->get('BANK')}.gif" alt="{l s='Pay by credit card in two payments' mod='tggatos'}" width="86" height="49"/>
+		<img src="{$module_template_dir|escape:'html'}views/img/bank_logo/{$TggAtos->get('BANK')}.gif" alt="{l s='Pay by credit card in two payments' mod='tggatos'}" width="86" height="49"/>
 		<span>
 			{l s='Pay by credit card in two payments' mod='tggatos'}
 		</span>
@@ -33,7 +33,7 @@
 
 {if $tggatos_3tForm}
 	<p class="payment_module tggatos-direct tggatos-3t">
-		<img src="{$module_template_dir|escape:'html'}images/bank_logo/{$TggAtos->get('BANK')}.gif" alt="{l s='Pay by credit card in three payments' mod='tggatos'}" width="86" height="49"/>
+		<img src="{$module_template_dir|escape:'html'}views/img/bank_logo/{$TggAtos->get('BANK')}.gif" alt="{l s='Pay by credit card in three payments' mod='tggatos'}" width="86" height="49"/>
 		<span>
 			{l s='Pay by credit card in three payments' mod='tggatos'}
 		</span>
