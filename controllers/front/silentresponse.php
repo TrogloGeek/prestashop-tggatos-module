@@ -30,4 +30,9 @@ class TggAtosSilentResponseModuleFrontController extends TggAtosModuleFrontContr
 		}
 		exit;
 	}
+
+	/**
+	 * Block attempt to perform SSL redirection, breaking silent response
+	 */
+	protected function sslRedirection() {}
 }
