@@ -36,6 +36,10 @@ $_MODULE['<{tggatos}prestashop>payment_gateway_350ff019596efe046c7d08b43d7dc313'
 $_MODULE['<{tggatos}prestashop>payment_gateway_733b34ab70968d3997605319f2c483e1'] = 'Cliquez sur le logo correspondant à votre carte pour être redirigé vers le serveur bancaire adéquat.';
 $_MODULE['<{tggatos}prestashop>payment_gateway_8d7b46a7c26cb13e96f240faf42a8565'] = 'Le paiement par carte est indisponible jusqu\'à demain, nous vous prions d\'accepter nos excuses pour cet inconvénient.';
 $_MODULE['<{tggatos}prestashop>payment_gateway_569fd05bdafa1712c4f6be5b153b8418'] = 'Autres méthodes de paiement';
+$_MODULE['<{tggatos}prestashop>processing_payment_response_21ff087f1520a70163128cae982de67a'] = 'Paiement par CB';
+$_MODULE['<{tggatos}prestashop>processing_payment_response_c453a4b8e8d98e82f35b67f433e3b4da'] = 'Paiement';
+$_MODULE['<{tggatos}prestashop>processing_payment_response_a1441881300f95a82e11800dcd9fddd5'] = 'En attente de validation bancaire';
+$_MODULE['<{tggatos}prestashop>processing_payment_response_9c4d0cd2e0c44d9e115f59946b3cb992'] = 'Nous attendons que la banque traite votre paiement. Nous vous enverrons un email dès réception de la confirmation.';
 $_MODULE['<{tggatos}prestashop>direct_payment_25065e3ef9274f9b0e3088340f6d79e6'] = 'Payer par carte';
 $_MODULE['<{tggatos}prestashop>direct_payment_733b34ab70968d3997605319f2c483e1'] = 'Cliquez sur le logo correspondant à votre carte pour être redirigé vers le serveur bancaire adéquat.';
 $_MODULE['<{tggatos}prestashop>direct_payment_bb359168ab3fbc82bc0077b9f7242e79'] = 'Payer par carte en deux fois';
