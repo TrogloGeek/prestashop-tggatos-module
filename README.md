@@ -65,7 +65,7 @@ so it's mainly based on the lack of error reporting for a given release candidat
 - Release candidates are symbolized by branches with a name starting with `RC_` followed by the version number. There are no build number management because commit history does the job as well.
 - When I feel enough time have passed without error report, I set a tag with version number to the tip of the RC branch, symbolizing a production release. But please do not trust it as a real production release, it's just an hint to let you know my opinion about it, you really should do a staging cycle with every version to check if I didn't introduced new bugs/incompatibilities.
 
-#### I have you module running well in production, but there is a new release, should I blindly update?
+#### I have your module running well in production, but there is a new release, should I blindly update?
 The hell no! This is a payment gateway, you should be really careful about it.
 Read the commit history between your release and the new one. 
 - Did I fix a bug which can affect your use of the module, or a security breach?
