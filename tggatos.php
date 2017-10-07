@@ -227,7 +227,7 @@ class TggAtos extends PaymentModule
 		$this->version = '4.1.3';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.4.0.0';
-		$this->ps_versions_compliancy['max'] = '1.6';
+		$this->ps_versions_compliancy['max'] = '1.7';
 		parent::__construct();
 		if (empty($this->_path)) {
 			$this->_path = __PS_BASE_URI__ . 'modules/' . $this->name . '/';
