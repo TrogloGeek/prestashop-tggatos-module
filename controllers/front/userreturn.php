@@ -1,8 +1,5 @@
 <?php
-if (!class_exists('TggAtosModuleFrontController', false)) {
-	require_once implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__), 'TggAtosModuleFrontController.php'));
-}
-class TggAtosUserReturnModuleFrontController extends TggAtosModuleFrontController
+class TggAtosUserReturnModuleFrontController extends ModuleFrontController
 {
 	public $display_column_left = false;
 	public $ssl = true;
@@ -30,63 +27,14 @@ class TggAtosUserReturnModuleFrontController extends TggAtosModuleFrontControlle
 		$message = Tools::getValue('DATA');
 		if (empty($message))
 			Tools::redirectLink($this->context->link->getPageLink('history.php', true));
-		$response = $this->module->uncypherResponse($message, TggAtosModuleResponseObject::TYPE_USER);
-		$id_cart = (int)$response->order_id;
-		// lock implementation to avoid race condition between silent and user response
-		// see: https://github.com/TrogloGeek/prestashop-tggatos-module/issues/46
-		$lock = uniqid('', true);
-		$has_lock = $this->module->tryCreateResponseLock($id_cart, $lock);
-		$can_proceed = null;
-		if (!$has_lock) {
-			$can_proceed = $this->module->waitForLockRemoval($id_cart);
-		} else {
-			$can_proceed = true;
-		}
-		if ($can_proceed) {
-			//Purging Cart::orderExists() cache.
-			// We do it even in case we obtained the lock to avoid race conditions where the cache has been
-			// populated during silent_response execution but lock was removed by it before we try to gain it.
-			// see: https://github.com/TrogloGeek/prestashop-tggatos-module/issues/46
-			if (class_exists('Cache', false) && method_exists('Cache', 'clean')) {
-				Cache::clean('Cart::orderExists_'.(string)$id_cart);
-			}
-			$order = $this->module->processResponse($response);
-			if ($has_lock) {
-				$this->module->removeResponseLock($id_cart, $lock);
-			}
-			if ($order) {
-				Tools::redirectLink(
-					$this->context->link->getPageLink(
-						'order-confirmation.php'
-						, true
-					)
-					. '?' . http_build_query(
-						array(
-							'id_cart' => $order->id_cart
-						, 'id_order' => $order->id
-						, 'transaction_id' => $response->transaction_id
-						, 'key' => $order->secure_key
-						, 'id_module' => $this->module->id
-						, 'tggatos_date' => date('Y-m-d')
-						)
-					)
-				);
-				exit;
-			}
-			Tools::redirect(
-				$this->module->getModuleLink(
-					TggAtos::CTRL_PAYMENT_FAILURE
-					, array('id_cart' => $response->order_id, 'transaction_id' => $response->transaction_id, 'tggatos_date' => date('Y-m-d'))
-				)
-			);
-			exit;
-		} else {
-			// response still being processed in another thread
-			// let's explain it to the client
-			$this->context->smarty->assign(array(
-				'tggatos_pathURI' => $this->module->getPathUri()
-			));
-			$this->setTemplate('processing_payment_response.tpl');
-		}
+        // response still being processed in another thread
+        // let's explain it to the client
+        $this->context->smarty->assign(array(
+            'tggatos_pathURI' => $this->module->getPathUri(),
+            'tggatos_ajaxUrl' => $this->module->getModuleLink('ajax', ['message' => $message], true),
+        ));
+        $this->registerStylesheet('modules-tggatos-processing_payment_response', 'modules/'.$this->module->name.'/views/css/processing_payment_response.css');
+        $this->registerJavascript('modules-tggatos-processing_payment_response', 'modules/'.$this->module->name.'/views/js/processing_payment_response.js');
+        $this->setTemplate('module:'.$this->module->name.'/views/templates/front/processing_payment_response.tpl');
 	}
 }

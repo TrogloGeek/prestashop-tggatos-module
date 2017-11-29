@@ -1,5 +1,7 @@
-# TggAtos Module for Prestashop 1.5 and Prestashop 1.6
+# TggAtos Module *BETA VERSION* for Prestashop 1.7
 ## ATOS SIPS 600 payment gateway
+
+If you are looking for PrestaShop 1.4, 1.5 and 1.6 please see 4.x module versions
 
 ###### This module helped you earning money ?
 Please contribute back
@@ -33,16 +35,15 @@ http://prestashop.blog.capillotracteur.fr/2013/02/10/debut-de-la-phase-release-c
 Sorry, it is a french blog, but they can be submitted in english as well.
 
 #### Environment used to test current version
-- Debian 7 x86_64
-- apache2-mpm-prefork (I prefer mpm-worker for production server but this is a dedicated local virtual machine with Eclipse project folder mounted from Windows host machine)
-- libapache2-mod-php5
-- PHP5
+- Debian 9 x86_64
+- Apache 2.4
+- PHP7.0-FPM
 
 #### Prerequisites
-- (hosting) PHP5 >= 5.3
+- (hosting) PHP5 >= 5.4
 - (hosting) safe_mode off
 - (hosting) exec() function not disabled, and able to execute ATOS SIPS binaries
-- (prestashop) version >= 1.5
+- (prestashop) version >= 1.7
 - (you) good web hosting configuration technical level and good knowledge of security issues
 - (you) basic undestanding of the way an ATOS SIPS gateway works and it's configuration
 

@@ -1,18 +1,25 @@
-{capture name=path}{l s='Card payment' mod='tggatos'}{/capture}
-{if version_compare($smarty.const._PS_VERSION_, '1.5', '>=') && version_compare($smarty.const._PS_VERSION_, '1.6', '<')}
-	{include file=$tpl_dir|cat:'breadcrumb.tpl'}
-{/if}
+{extends file='page.tpl'}
 
-<h2>{l s='Payment' mod='tggatos'}</h2>
-
-{assign var='current_step' value='payment'}
-{include file=$tpl_dir|cat:'order-steps.tpl'}
-
-
-<h3>
-	{l s='Waiting for bank validation' mod='tggatos'}
-</h3>
-<p>
-	<img src="{$tggatos_pathURI}views/img/atos.gif" alt="{l s='Card payment' mod='tggatos'}" style="float:left; margin: 0px 10px 5px 0px;" />
-	{l s='We are waiting for the bank to process your payment. We will send you an email confirmation as soon as we receive it.' mod='tggatos'}
-</p>
+{block name="page_content"}
+	<h2>{l s='Processing payment' mod='tggatos'}</h2>
+	<div class="tggatos-status-wrapper tggatos-status-awaiting" data-ajax-url="{$tggatos_ajaxUrl}">
+		<div class="tggatos-awaiting-silentesponse">
+			<p>
+				<img src="{$tggatos_pathURI}views/img/atos.gif" alt="{l s='Card payment' mod='tggatos'}" style="float:left; margin: 0px 10px 5px 0px;" />
+				{l s='We are currently processing your payment. It may take a few moments, you can wait here or close this page and wait for our order confirmation email.' mod='tggatos'}
+			</p>
+			<div class="tggatos-status-icon-wrapper">
+				<i class="material-icons tggatos-status-icon">sync</i>
+			</div>
+		</div>
+		<div class="tggatos-silentresponse-completed">
+			<p>
+				<img src="{$tggatos_pathURI}views/img/atos.gif" alt="{l s='Card payment' mod='tggatos'}" style="float:left; margin: 0px 10px 5px 0px;" />
+				{l s='Your payment has been processed, you will be redirected in a few seconds.'}
+			</p>
+			<div class="tggatos-status-icon-wrapper">
+				<i class="material-icons tggatos-status-icon">done</i>
+			</div>
+		</div>
+	</div>
+{/block}

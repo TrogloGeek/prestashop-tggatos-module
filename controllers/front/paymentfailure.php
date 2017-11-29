@@ -1,17 +1,14 @@
 <?php
-if (!class_exists('TggAtosModuleFrontController', false)) {
-	require_once implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__), 'TggAtosModuleFrontController.php'));
-}
-class TggAtosPaymentFailureModuleFrontController extends TggAtosModuleFrontController
+
+/**
+ * Class TggAtosPaymentFailureModuleFrontController
+ * @property TggAtos $module
+ */
+class TggAtosPaymentFailureModuleFrontController extends ModuleFrontController
 {
 	public $display_column_left = false;
 	public $ssl = true;
 
-	/**
-	 *  @var TggAtos
-	 */
-	public $module;
-	
 	public function init()
 	{
 		parent::init();
@@ -27,8 +24,10 @@ class TggAtosPaymentFailureModuleFrontController extends TggAtosModuleFrontContr
 	public function initContent()
 	{
 		parent::initContent();
-		$response = $this->module->getResponseFromLog(Tools::getValue('tggatos_date'), Tools::getValue('id_cart'), Tools::getValue('transaction_id'));
-		$currency = Currency::getCurrencyInstance(Currency::getIdByIsoCodeNum($response->currency_code));
+		$response = $this->module->uncypherResponse(Tools::getValue('message'), TggAtosModuleResponseObject::TYPE_USER);
+		$currencyCode = null;
+		$this->module->decodeCaddieField($response->caddie, $currencyCode);
+		$currency = Currency::getCurrencyInstance(Currency::getIdByIsoCode($currencyCode));
 		/* @var $currency Currency */
 		$amount = (float)$response->amount;
 		if ($currency->decimals)
@@ -39,6 +38,6 @@ class TggAtosPaymentFailureModuleFrontController extends TggAtosModuleFrontContr
 			'tggatos_amount' => $amount,
 			'tggatos_currency' => $currency
 		));
-		$this->setTemplate('payment_failure.tpl');
+		$this->setTemplate('module:'.$this->module->name.'/views/templates/front/payment_failure.tpl');
 	}
 }

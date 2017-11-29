@@ -1,0 +1,39 @@
+.tggatos-awaiting-silentesponse {
+    display: none;
+}
+.tggatos-silentresponse-completed {
+    display: block;
+}
+
+.tggatos-status-awaiting .tggatos-awaiting-silentesponse {
+    display: block;
+}
+.tggatos-status-awaiting .tggatos-silentresponse-completed {
+    display: none;
+}
+
+.tggatos-status-icon-wrapper {
+    text-align: center;
+}
+.tggatos-status-icon {
+    font-size: 64px;
+    color: green;
+}
+.tggatos-awaiting-silentesponse .tggatos-status-icon {
+    animation: tggatos-status-icon-waiting;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    color: steelblue;
+}
+@keyframes tggatos-status-icon-waiting {
+    0% {
+        transform: rotate(0deg);
+    }
+    60% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}

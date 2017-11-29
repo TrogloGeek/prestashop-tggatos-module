@@ -1,8 +1,5 @@
 <?php
-if (!class_exists('TggAtosModuleFrontController', false)) {
-	require_once implode(DIRECTORY_SEPARATOR, array(dirname(__FILE__), 'TggAtosModuleFrontController.php'));
-}
-class TggAtosSilentResponseModuleFrontController extends TggAtosModuleFrontController
+class TggAtosSilentResponseModuleFrontController extends ModuleFrontController
 {
 	public $display_column_left = false;
 	public $ssl = false;
@@ -18,12 +15,12 @@ class TggAtosSilentResponseModuleFrontController extends TggAtosModuleFrontContr
 		$message = Tools::getValue('DATA');
 		if (empty($message))
 		{
-			header(null, null, 500);
+			header(null, null, 400);
 			exit;
 		}
 		$response = $this->module->uncypherResponse($message, TggAtosModuleResponseObject::TYPE_SILENT);
 		$id_cart = (int)$response->order_id;
-		$lock = uniqid('', true);
+		$lock = null;
 		if ($this->module->tryCreateResponseLock($id_cart, $lock)) {
 			$this->module->processResponse($response);
 			$this->module->removeResponseLock($id_cart, $lock);
