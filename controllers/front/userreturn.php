@@ -1,15 +1,16 @@
 <?php
-class TggAtosUserReturnModuleFrontController extends ModuleFrontController
+require_once 'basebankreturn.php';
+
+class TggAtosUserReturnModuleFrontController extends TggAtosBaseBankReturnFrontController
 {
-	public $display_column_left = false;
 	public $ssl = true;
 
-	/**
-	 *  @var TggAtos
-	 */
-	public $module;
+    protected function getResponseType()
+    {
+        return TggAtosModuleResponseObject::TYPE_USER;
+    }
 
-	public function init()
+    public function init()
 	{
 		parent::init();
 
@@ -24,14 +25,11 @@ class TggAtosUserReturnModuleFrontController extends ModuleFrontController
 	public function initContent()
 	{
 		parent::initContent();
-		$message = Tools::getValue('DATA');
-		if (empty($message))
+		if (empty($this->bankMessage))
 			Tools::redirectLink($this->context->link->getPageLink('history.php', true));
-        // response still being processed in another thread
-        // let's explain it to the client
         $this->context->smarty->assign(array(
             'tggatos_pathURI' => $this->module->getPathUri(),
-            'tggatos_ajaxUrl' => $this->module->getModuleLink('ajax', ['message' => $message], true),
+            'tggatos_ajaxUrl' => $this->module->getModuleLink('ajax', ['DATA' => $this->bankMessage], true),
         ));
         $this->registerStylesheet('modules-tggatos-processing_payment_response', 'modules/'.$this->module->name.'/views/css/processing_payment_response.css');
         $this->registerJavascript('modules-tggatos-processing_payment_response', 'modules/'.$this->module->name.'/views/js/processing_payment_response.js');

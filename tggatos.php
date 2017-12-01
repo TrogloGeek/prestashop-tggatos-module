@@ -218,7 +218,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '5.0.0-beta1';
+		$this->version = '5.0.0-beta2';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.7.0.0';
 		$this->ps_versions_compliancy['max'] = '1.7';
@@ -232,7 +232,6 @@ class TggAtos extends PaymentModule
 		$this->displayName = $this->l('CC Payment with SIPS/ATOS');
 		$this->description = $this->l('SIPS/ATOS payment module by TrogloGeek');
 		$this->confirmUninstall = $this->l('Uninstall this module will erase your configuration including current transaction ID, continue ?');
-		/* Backward compatibility */
 		if (defined('_PS_ADMIN_DIR_')) {
 			$this->autoCheck();
 		}

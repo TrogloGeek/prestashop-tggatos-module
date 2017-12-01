@@ -12,14 +12,14 @@ Suggested donation: 25 &euro; for basic user, 80 &euro; for professionals which 
 
 Donations help me to find time to develop and maintain the module and to answer support requests.
 
-### Release 3.4.0
+### BETA 5.0.0
 
 #### RELEASE-CANDIDATE feedback requests
 - Check that silent response works well (not yet checked due the use of a local virtual machine as server)
-- Production use feedbacks with:
-	- details about used functionnalities
+- Exploitation feedback with:
+	- details about used features
 	- details about production environment configuration:
-		- general public Web Hosting if relevant (exemple: "Mutualised Pro hosting from OVH company" or "Dedicated web server from OVH company", the last one is only relevant if you didn't change much of the configuration options that may affect module operation)
+		- general public Web Hosting if relevant (example: "Mutualised Pro hosting from OVH company" or "Dedicated web server from OVH company", the last one is only relevant if you didn't change much of the configuration options that may affect module operation)
 		- OS used with distribution and version
 		- HTTP server, and multi process module if relevant, with version
 		- PHP integration type and version
@@ -48,6 +48,8 @@ Sorry, it is a french blog, but they can be submitted in english as well.
 - (you) basic undestanding of the way an ATOS SIPS gateway works and it's configuration
 
 #### Installation (differences with a simple PrestaShop module)
+
+##### Generic method
 - Make sure the module folder is named `tggatos`, the project content must be located in `modules/tggatos`.
 - Replace `tggatos/bin/` content with binaries compatible with your system provided by your SIPS service provider
 - Update `tggatos/param/parmcom.<sips_service_provider_codename>` with content of default parmcom provided by your SIPS service provider 
@@ -58,7 +60,23 @@ Sorry, it is a french blog, but they can be submitted in english as well.
 - Relocate `tggatos/param` somewhere safe from public access, outside HTTP document root, update module configuration in advanced panel.
 - Relocate `tggatos/log` folder, update module configuration in basic panel.
 - Check if access control policies match your environment and configuration, modify if needed.
-- If you experience any trouble please set PrestaShop constant `_PS_MODE_DEV_` to TRUE, enable PHP error logging and set error reporting to -1 (all) while troubleshooting 
+- If you experience any trouble please set PrestaShop constant `_PS_MODE_DEV_` to TRUE, enable PHP error logging and set error reporting to -1 (all) while troubleshooting
+
+##### Installation via a linux webserver shell using git (recommended method)
+
+```bash
+    shopuser@webserver:prestashop$ cd modules
+    shopuser@webserver:prestashop/modules$ git clone --depth 1 -b 5.0.0-beta https://github.com/TrogloGeek/prestashop-tggatos-module.git tggatos
+    shopuser@webserver:prestashop/modules$ cd tggatos
+    shopuser@webserver:prestashop/modules/tggatos$ git checkout -b local
+```
+
+`git clone` arguments explained:
+- (optional) `--depth 1` will reduce network and disk usage by truncating git history
+- `-b 5.0.0-beta` will checkout the selected branch or tag name, required if you use `--depth 1`
+- (required) `tggatos` will clone the module in this directory name instead of the GitHub project name `prestashop-tggatos-module`
+
+`git checkout -b local` will create a branch named `local` so you can later commit local changes if needed
 
 #### Release cycle
 I do not have enough feedback to manage a real release cycle, and I don't use it myself, I do run alpha tests on it but it is only a set of basic tests to try to check if I introduced side effects with last changes, never trust my checks, please run your owns.

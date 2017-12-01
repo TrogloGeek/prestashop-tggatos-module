@@ -6,23 +6,35 @@
  * Time: 13:00
  */
 
+require_once 'basebankreturn.php';
+
 /**
  * Class TggAtosAjaxModuleFrontController
  * @property TggAtos $module
  */
-class TggAtosAjaxModuleFrontController extends ModuleFrontController
+class TggAtosAjaxModuleFrontController extends TggAtosBaseBankReturnFrontController
 {
+    protected function getResponseType()
+    {
+        return TggAtosModuleResponseObject::TYPE_USER;
+    }
+
     public function initContent()
     {
         while (ob_get_level()) {
             ob_end_clean();
         }
-        $message = Tools::getValue('message');
-        $response = $this->module->uncypherResponse($message, TggAtosModuleResponseObject::TYPE_USER);
-        $id_cart = (int)$response->order_id;
+        $id_cart = (int)$this->bankResponse->order_id;
         $action = Tools::getValue('action');
         switch ($action) {
             case 'process-response':
+                if (empty($this->bankMessage)) {
+                    header(null, null, 400);
+                    exit;
+                }
+                if (!($this->bankResponse instanceof TggAtosModuleResponseObject)) {
+                    header(null, null, 503);
+                }
                 $lock = null;
                 $hasLock = $this->module->tryCreateResponseLock($id_cart, $lock);
                 if (!$hasLock) {
@@ -30,7 +42,7 @@ class TggAtosAjaxModuleFrontController extends ModuleFrontController
                         'result' => false
                     ]));
                 }
-                $order = $this->module->processResponse($response);
+                $order = $this->module->processResponse($this->bankResponse);
                 $this->module->removeResponseLock($id_cart, $lock);
                 $url = null;
                 if ($order instanceof OrderCore) {
@@ -38,11 +50,11 @@ class TggAtosAjaxModuleFrontController extends ModuleFrontController
                         'id_cart' => $id_cart,
                         'id_module' => $this->module->id,
                         'key' => $order->secure_key,
-                        'sips_message' => $message
+                        'sips_message' => $this->bankMessage
                     ]);
                 } else {
                     $url = $this->module->getModuleLink(TggAtos::CTRL_PAYMENT_FAILURE, [
-                        'message' => $message
+                        'message' => $this->bankMessage
                     ]);
                 }
                 die(json_encode([
