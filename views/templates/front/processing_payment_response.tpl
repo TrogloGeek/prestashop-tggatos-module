@@ -15,7 +15,7 @@
 		<div class="tggatos-silentresponse-completed">
 			<p>
 				<img src="{$tggatos_pathURI}views/img/atos.gif" alt="{l s='Card payment' mod='tggatos'}" style="float:left; margin: 0px 10px 5px 0px;" />
-				{l s='Your payment has been processed, you will be redirected in a few seconds.'}
+				{l s='Your payment has been processed, you will be redirected in a few seconds.' mod='tggatos'}
 			</p>
 			<div class="tggatos-status-icon-wrapper">
 				<i class="material-icons tggatos-status-icon">done</i>
