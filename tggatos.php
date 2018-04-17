@@ -1796,7 +1796,7 @@ class TggAtos extends PaymentModule
 					'input' => self::IN_TEXT,
 					'description' => $this->l('Silent return front office domain'),
 					'hint' => $this->l('Used to generate the silent return URL transmitted to ATOS API. Leave empty to use Prestashop\'s Shop domain.'),
-					'atos' => 'automatic_reponse_url',
+					'atos' => 'automatic_response_url',
 					'width' => '100%',
 					'default' => TggATos::RETURN_DOMAIN_AUTO
 				),
