@@ -6,13 +6,13 @@ If you are looking for PrestaShop 1.4, 1.5 and 1.6 please see 4.x module version
 ###### This module helped you earning money ?
 Please contribute back
 
-[![Donate to help development and support of TggAtos] (https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)] (https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UEN4JZ24FVDXU)
+[![Donate to help development and support of TggAtos](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UEN4JZ24FVDXU)
 
 Suggested donation: 25 &euro; for basic user, 80 &euro; for professionals which often use the module.
 
 Donations help me to find time to develop and maintain the module and to answer support requests.
 
-### BETA 5.0.0
+### 5.1.0
 
 #### RELEASE-CANDIDATE feedback requests
 - Check that silent response works well (not yet checked due the use of a local virtual machine as server)
@@ -40,7 +40,7 @@ Sorry, it is a french blog, but they can be submitted in english as well.
 - PHP7.0-FPM
 
 #### Prerequisites
-- (hosting) PHP5 >= 5.4
+- (hosting) PHP5 >= 5.6
 - (hosting) safe_mode off
 - (hosting) exec() function not disabled, and able to execute ATOS SIPS binaries
 - (prestashop) version >= 1.7

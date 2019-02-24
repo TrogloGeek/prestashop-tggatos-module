@@ -218,7 +218,7 @@ class TggAtos extends PaymentModule
 		$this->author = 'TrogloGeek';
 		$this->tab = 'payments_gateways';
 		$this->need_instance = 1;
-		$this->version = '5.0.0-beta2';
+		$this->version = '5.1.0';
 		$this->currencies_mode = 'checkbox';
 		$this->ps_versions_compliancy['min'] = '1.7.0.0';
 		$this->ps_versions_compliancy['max'] = '1.7';
@@ -451,13 +451,9 @@ class TggAtos extends PaymentModule
             $_paymentOption
                 ->setModuleName($this->name)
                 ->setCallToActionText($this->l($texts[$paymentMode-1]))
-                ->setBinary(true)
-                ->setForm($this->getPaymentRedirectionForm($orderTotal, $this->context->currency, $paymentMode, [
-                    'customer_id' => $this->context->customer->id,
-                    'order_id' => $this->context->cart->id
-                ], $transactionId))
-                //->setLogo($this->getPathUri().'/views/img/bank_logo/'.$this->get(self::CNF_BANK).'.gif') //TODO: should we? result is really ugly with default theme...
                 ->setAdditionalInformation($this->fetch('module:'.$this->name.'/views/templates/hook/payment_option_additional.tpl'))
+                ->setAction($this->context->link->getModuleLink($this->name, self::CTRL_PAYMENT_GATEWAY, array('mode' => $paymentMode), true))
+                //->setLogo($this->getPathUri().'/views/img/bank_logo/'.$this->get(self::CNF_BANK).'.gif') //TODO: should we? result is really ugly with default theme...
             ;
             $this->smarty->assign('tggatos_mode', $paymentMode);
             if ($this->getDebugMode()) {
@@ -493,6 +489,23 @@ class TggAtos extends PaymentModule
         }
 		return $this->display(__FILE__, 'views/templates/hook/payment_return.tpl');
 	}
+
+    /**
+     * Generate payment redirection form by calling request binary of ATOS SIPS API using context values.
+     * @param int $mode self::MODE_*
+     * @return boolean|string
+     * @throws PrestaShopModuleException
+     * @throws PrestaShopDatabaseException
+     */
+	public function getPaymentRedirectionFormFromContext($mode) {
+        $cart = $this->context->cart;
+        $currency = $this->context->currency;
+        if (!$this->canProcess($mode, $cart)) return false;
+        return $this->getPaymentRedirectionForm($cart->getOrderTotal(), $currency, $mode, [
+            'customer_id' => $this->context->customer->id,
+            'order_id' => $this->context->cart->id
+        ]);
+    }
 
     /**
      * Generate payment redirection form by calling request binary of ATOS SIPS API
