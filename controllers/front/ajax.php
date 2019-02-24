@@ -42,8 +42,12 @@ class TggAtosAjaxModuleFrontController extends TggAtosBaseBankReturnFrontControl
                         'result' => false
                     ]));
                 }
-                $order = $this->module->processResponse($this->bankResponse);
-                $this->module->removeResponseLock($id_cart, $lock);
+                $order = null;
+                try {
+                    $order = $this->module->processResponse($this->bankResponse);
+                } finally {
+                    $this->module->removeResponseLock($id_cart, $lock);
+                }
                 $url = null;
                 if ($order instanceof OrderCore) {
                     $url = $this->context->link->getPageLink('order-confirmation', null, null, [

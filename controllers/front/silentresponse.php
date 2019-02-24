@@ -27,8 +27,11 @@ class TggAtosSilentResponseModuleFrontController extends TggAtosBaseBankReturnFr
         $id_cart = (int)$this->bankResponse->order_id;
         $lock = null;
         if ($this->module->tryCreateResponseLock($id_cart, $lock)) {
-            $this->module->processResponse($this->bankResponse);
-            $this->module->removeResponseLock($id_cart, $lock);
+            try {
+                $this->module->processResponse($this->bankResponse);
+            } finally {
+                $this->module->removeResponseLock($id_cart, $lock);
+            }
         }
         while (ob_get_level()) {
             ob_end_clean();
