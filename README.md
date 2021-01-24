@@ -51,9 +51,11 @@ Sorry, it is a french blog, but they can be submitted in english as well.
 
 ##### Generic method
 - Make sure the module folder is named `tggatos`, the project content must be located in `modules/tggatos`.
-- Replace `tggatos/bin/` content with binaries compatible with your system provided by your SIPS service provider
+- Replace `tggatos/bin/` content with binaries compatible with your system provided by your SIPS service provider. Remember to use BINARY FTP tranfer mode if transfered using FTP.
+- Try to execute the binaries (`request` and `response` on Linux/BSD systems or `request.exe` and `response.exe` on Windows systems) to ensure they are compatible with your system, for example using SSH remote shell.
 - Update `tggatos/param/parmcom.<sips_service_provider_codename>` with content of default parmcom provided by your SIPS service provider 
-- `tggatos/bin/` folder, it's content and upper folders in file system need execution right set to PHP user
+- `tggatos/bin/` folder, it's content and upper folders in file system need execution right set to PHP process user
+- Try executing them again using from PHP process user session to check you set the rights correctly. 
 - `tggatos/param/` folder and it's content must be writable by PHP user
 - `tggatos/log/` folder must be writable by PHP user
 - Install module
